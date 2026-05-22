@@ -1,0 +1,1197 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CodeLab — Multi-Language Playground</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&family=Syne:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0a0a0f;
+    --surface: #111118;
+    --surface2: #1a1a24;
+    --border: #2a2a3a;
+    --accent: #7c6af7;
+    --accent2: #f97316;
+    --green: #22d3a3;
+    --red: #f87171;
+    --yellow: #fbbf24;
+    --text: #e8e8f0;
+    --muted: #6b6b8a;
+    --py: #3b82f6;
+    --js: #f59e0b;
+    --sql: #10b981;
+    --cs: #a855f7;
+    --rs: #ef4444;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'Syne', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* BG Grid */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image:
+      linear-gradient(rgba(124,106,247,0.04) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(124,106,247,0.04) 1px, transparent 1px);
+    background-size: 40px 40px;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .glow-orb {
+    position: fixed;
+    width: 600px; height: 600px;
+    background: radial-gradient(circle, rgba(124,106,247,0.08) 0%, transparent 70%);
+    top: -200px; right: -200px;
+    pointer-events: none;
+    z-index: 0;
+    animation: orbFloat 8s ease-in-out infinite;
+  }
+  .glow-orb2 {
+    position: fixed;
+    width: 400px; height: 400px;
+    background: radial-gradient(circle, rgba(249,115,22,0.06) 0%, transparent 70%);
+    bottom: -100px; left: -100px;
+    pointer-events: none;
+    z-index: 0;
+    animation: orbFloat 12s ease-in-out infinite reverse;
+  }
+  @keyframes orbFloat {
+    0%, 100% { transform: translate(0, 0); }
+    50% { transform: translate(30px, 30px); }
+  }
+
+  .container {
+    position: relative;
+    z-index: 1;
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 20px;
+  }
+
+  /* Header */
+  header {
+    padding: 24px 0 20px;
+    border-bottom: 1px solid var(--border);
+    margin-bottom: 28px;
+  }
+  .header-inner {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 16px;
+  }
+  .logo {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .logo-icon {
+    width: 40px; height: 40px;
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 20px;
+  }
+  .logo-text {
+    font-size: 22px;
+    font-weight: 800;
+    letter-spacing: -0.5px;
+  }
+  .logo-text span { color: var(--accent); }
+  .logo-sub {
+    font-size: 11px;
+    color: var(--muted);
+    font-family: 'JetBrains Mono', monospace;
+    letter-spacing: 1px;
+  }
+  .status-bar {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 12px;
+    color: var(--muted);
+    font-family: 'JetBrains Mono', monospace;
+  }
+  .status-dot {
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    background: var(--muted);
+    animation: pulse 2s infinite;
+  }
+  .status-dot.ready { background: var(--green); }
+  @keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.4; }
+  }
+
+  /* Language Tabs */
+  .lang-tabs {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+  }
+  .lang-tab {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 18px;
+    border-radius: 10px;
+    border: 1px solid var(--border);
+    background: var(--surface);
+    cursor: pointer;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--muted);
+    transition: all 0.2s;
+    position: relative;
+    overflow: hidden;
+  }
+  .lang-tab::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    opacity: 0;
+    transition: opacity 0.2s;
+  }
+  .lang-tab:hover { color: var(--text); border-color: #3a3a4a; }
+  .lang-tab.active {
+    color: var(--text);
+    border-color: var(--tab-color, var(--accent));
+    background: color-mix(in srgb, var(--tab-color, var(--accent)) 12%, var(--surface));
+    box-shadow: 0 0 20px color-mix(in srgb, var(--tab-color, var(--accent)) 20%, transparent);
+  }
+  .lang-tab .dot {
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    background: var(--tab-color, var(--muted));
+    flex-shrink: 0;
+  }
+  .lang-tab.external-tab {
+    opacity: 0.7;
+    cursor: pointer;
+  }
+  .lang-tab.external-tab:hover { opacity: 1; }
+  .ext-badge {
+    font-size: 9px;
+    padding: 2px 5px;
+    border-radius: 4px;
+    background: rgba(255,255,255,0.08);
+    letter-spacing: 0.5px;
+  }
+
+  /* Main Layout */
+  .editor-layout {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    height: 520px;
+  }
+  @media (max-width: 768px) {
+    .editor-layout { grid-template-columns: 1fr; height: auto; }
+  }
+
+  .panel {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+
+  .panel-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 16px;
+    border-bottom: 1px solid var(--border);
+    background: var(--surface2);
+    flex-shrink: 0;
+  }
+  .panel-title {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 1.5px;
+    color: var(--muted);
+    text-transform: uppercase;
+    font-family: 'JetBrains Mono', monospace;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .panel-title-dot {
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    background: var(--active-lang-color, var(--accent));
+  }
+
+  .btn-run {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    padding: 7px 16px;
+    background: linear-gradient(135deg, var(--active-lang-color, var(--accent)), color-mix(in srgb, var(--active-lang-color, var(--accent)) 70%, #fff));
+    border: none;
+    border-radius: 8px;
+    color: white;
+    font-family: 'Syne', sans-serif;
+    font-size: 12px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.2s;
+    letter-spacing: 0.5px;
+  }
+  .btn-run:hover { transform: translateY(-1px); box-shadow: 0 4px 12px rgba(0,0,0,0.3); }
+  .btn-run:active { transform: translateY(0); }
+  .btn-run:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+  .btn-run .run-icon { font-size: 14px; }
+
+  .btn-clear {
+    padding: 7px 12px;
+    background: transparent;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    color: var(--muted);
+    font-size: 12px;
+    cursor: pointer;
+    font-family: 'Syne', sans-serif;
+    transition: all 0.2s;
+  }
+  .btn-clear:hover { color: var(--text); border-color: #3a3a4a; }
+
+  /* Editor */
+  .editor-wrap {
+    flex: 1;
+    overflow: hidden;
+    position: relative;
+  }
+  textarea.code-editor {
+    width: 100%;
+    height: 100%;
+    background: transparent;
+    border: none;
+    outline: none;
+    resize: none;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 13.5px;
+    line-height: 1.7;
+    color: var(--text);
+    padding: 16px;
+    tab-size: 4;
+    -moz-tab-size: 4;
+    caret-color: var(--active-lang-color, var(--accent));
+  }
+  textarea.code-editor::selection {
+    background: rgba(124,106,247,0.25);
+  }
+
+  /* Output */
+  .output-wrap {
+    flex: 1;
+    overflow-y: auto;
+    padding: 16px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 13px;
+    line-height: 1.7;
+  }
+  .output-wrap::-webkit-scrollbar { width: 4px; }
+  .output-wrap::-webkit-scrollbar-track { background: transparent; }
+  .output-wrap::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+
+  .output-line { margin-bottom: 2px; word-break: break-all; white-space: pre-wrap; }
+  .output-line.error { color: var(--red); }
+  .output-line.info { color: var(--muted); font-style: italic; }
+  .output-line.success { color: var(--green); }
+  .output-line.warn { color: var(--yellow); }
+  .output-placeholder {
+    color: var(--muted);
+    font-style: italic;
+    font-size: 12px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    gap: 8px;
+    text-align: center;
+  }
+  .output-placeholder .big-icon { font-size: 32px; opacity: 0.4; }
+
+  /* Loading overlay */
+  .loading-overlay {
+    position: absolute;
+    inset: 0;
+    background: rgba(10,10,15,0.85);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    backdrop-filter: blur(4px);
+    z-index: 10;
+    border-radius: 14px;
+  }
+  .spinner {
+    width: 36px; height: 36px;
+    border: 3px solid var(--border);
+    border-top-color: var(--accent);
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .loading-text {
+    font-size: 13px;
+    color: var(--muted);
+    font-family: 'JetBrains Mono', monospace;
+  }
+
+  /* External Panel */
+  .external-panel {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 40px 32px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    gap: 24px;
+  }
+  .ext-icon { font-size: 48px; }
+  .ext-title { font-size: 20px; font-weight: 800; }
+  .ext-desc { font-size: 14px; color: var(--muted); line-height: 1.6; max-width: 400px; }
+  .ext-platforms {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+  .ext-link {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 20px;
+    border-radius: 10px;
+    border: 1px solid var(--border);
+    color: var(--text);
+    text-decoration: none;
+    font-size: 13px;
+    font-weight: 600;
+    font-family: 'JetBrains Mono', monospace;
+    background: var(--surface2);
+    transition: all 0.2s;
+  }
+  .ext-link:hover {
+    border-color: var(--tab-color, var(--accent));
+    background: color-mix(in srgb, var(--tab-color, var(--accent)) 12%, var(--surface2));
+    transform: translateY(-2px);
+  }
+
+  /* Bottom Bar */
+  .bottom-bar {
+    margin-top: 16px;
+    padding: 12px 16px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    font-size: 11px;
+    font-family: 'JetBrains Mono', monospace;
+    color: var(--muted);
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+  .lib-badges {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+    align-items: center;
+  }
+  .lib-badge {
+    padding: 3px 8px;
+    border-radius: 5px;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    font-size: 10px;
+    color: var(--muted);
+  }
+  .lib-badge.active-lib {
+    color: var(--active-lang-color, var(--accent));
+    border-color: color-mix(in srgb, var(--active-lang-color, var(--accent)) 40%, transparent);
+  }
+
+  /* Input modal */
+  .input-modal {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.7);
+    backdrop-filter: blur(4px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+  }
+  .input-modal-box {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 28px;
+    width: 420px;
+    max-width: 90vw;
+  }
+  .input-modal-title { font-size: 16px; font-weight: 700; margin-bottom: 8px; }
+  .input-modal-prompt { font-size: 13px; color: var(--muted); margin-bottom: 16px; font-family: 'JetBrains Mono', monospace; background: var(--surface2); padding: 8px 12px; border-radius: 6px; }
+  .input-modal-field {
+    width: 100%;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 10px 14px;
+    color: var(--text);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 14px;
+    outline: none;
+    margin-bottom: 16px;
+    transition: border-color 0.2s;
+  }
+  .input-modal-field:focus { border-color: var(--accent); }
+  .input-modal-btns { display: flex; gap: 8px; justify-content: flex-end; }
+  .btn-ok {
+    padding: 8px 20px;
+    background: var(--accent);
+    border: none;
+    border-radius: 8px;
+    color: white;
+    font-family: 'Syne', sans-serif;
+    font-weight: 700;
+    font-size: 13px;
+    cursor: pointer;
+  }
+
+  /* Responsive */
+  @media (max-width: 600px) {
+    .editor-layout { height: auto; }
+    .panel { height: 320px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="glow-orb"></div>
+<div class="glow-orb2"></div>
+
+<div class="container">
+  <header>
+    <div class="header-inner">
+      <div class="logo">
+        <div class="logo-icon">⚡</div>
+        <div>
+          <div class="logo-text">Code<span>Lab</span></div>
+          <div class="logo-sub">MULTI-LANGUAGE PLAYGROUND</div>
+        </div>
+      </div>
+      <div class="status-bar">
+        <div class="status-dot" id="statusDot"></div>
+        <span id="statusText">Initializing...</span>
+      </div>
+    </div>
+  </header>
+
+  <!-- Language Tabs -->
+  <div class="lang-tabs" id="langTabs">
+    <button class="lang-tab active" data-lang="python" style="--tab-color: var(--py)">
+      <div class="dot" style="background:var(--py)"></div>Python
+    </button>
+    <button class="lang-tab" data-lang="javascript" style="--tab-color: var(--js)">
+      <div class="dot" style="background:var(--js)"></div>JavaScript
+    </button>
+    <button class="lang-tab" data-lang="sql" style="--tab-color: var(--sql)">
+      <div class="dot" style="background:var(--sql)"></div>SQL
+    </button>
+    <button class="lang-tab external-tab" data-lang="csharp" style="--tab-color: var(--cs)">
+      <div class="dot" style="background:var(--cs)"></div>C# <span class="ext-badge">EXTERNAL</span>
+    </button>
+    <button class="lang-tab external-tab" data-lang="rust" style="--tab-color: var(--rs)">
+      <div class="dot" style="background:var(--rs)"></div>Rust <span class="ext-badge">EXTERNAL</span>
+    </button>
+  </div>
+
+  <!-- Editor Area (Python, JS, SQL) -->
+  <div id="editorSection">
+    <div class="editor-layout">
+      <!-- Code Panel -->
+      <div class="panel" id="codePanel">
+        <div class="panel-header">
+          <div class="panel-title">
+            <div class="panel-title-dot" id="editorDot"></div>
+            <span id="editorLabel">EDITOR</span>
+          </div>
+          <div style="display:flex;gap:8px;align-items:center">
+            <button class="btn-clear" onclick="clearCode()">Clear</button>
+            <button class="btn-run" id="runBtn" onclick="runCode()">
+              <span class="run-icon">▶</span> Run
+            </button>
+          </div>
+        </div>
+        <div class="editor-wrap" style="position:relative">
+          <textarea class="code-editor" id="codeEditor" spellcheck="false" placeholder="// Write your code here..."></textarea>
+        </div>
+      </div>
+
+      <!-- Output Panel -->
+      <div class="panel" id="outputPanel">
+        <div class="panel-header">
+          <div class="panel-title">
+            <div class="panel-title-dot" id="outputDot"></div>
+            OUTPUT
+          </div>
+          <button class="btn-clear" onclick="clearOutput()">Clear</button>
+        </div>
+        <div class="output-wrap" id="outputWrap">
+          <div class="output-placeholder" id="outputPlaceholder">
+            <div class="big-icon">🖥️</div>
+            <div>Output will appear here</div>
+            <div style="font-size:11px">Press Run to execute your code</div>
+          </div>
+        </div>
+        <!-- Loading overlay inside output -->
+        <div class="loading-overlay" id="loadingOverlay" style="display:none">
+          <div class="spinner"></div>
+          <div class="loading-text" id="loadingText">Loading Python...</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- External Panel (C#, Rust) -->
+  <div id="externalSection" style="display:none">
+    <div class="external-panel" id="externalContent"></div>
+  </div>
+
+  <!-- Bottom Bar -->
+  <div class="bottom-bar" id="bottomBar">
+    <div class="lib-badges" id="libBadges"></div>
+    <div id="execTime" style="color:var(--muted)">—</div>
+  </div>
+</div>
+
+<!-- Input Modal -->
+<div class="input-modal" id="inputModal" style="display:none">
+  <div class="input-modal-box">
+    <div class="input-modal-title">Input Required</div>
+    <div class="input-modal-prompt" id="inputPrompt">Enter value:</div>
+    <input class="input-modal-field" id="inputField" type="text" autofocus>
+    <div class="input-modal-btns">
+      <button class="btn-ok" id="inputOkBtn">OK</button>
+    </div>
+  </div>
+</div>
+
+<!-- sql.js -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.10.2/sql-wasm.js"></script>
+
+<script>
+// ========== STATE ==========
+let currentLang = 'python';
+let pyodide = null;
+let pyodideReady = false;
+let sqlDB = null;
+let sqlReady = false;
+let isRunning = false;
+let startTime = null;
+
+// ========== LANGUAGE CONFIG ==========
+const LANG_CONFIG = {
+  python: {
+    color: '#3b82f6',
+    label: 'Python 3 · Pyodide',
+    libs: ['numpy', 'pandas', 'matplotlib', 'scipy', 'scikit-learn', 'requests (sim)', 'json', 'math', 're', 'datetime'],
+    default: `import sys
+import json
+import math
+
+# --- Python Playground ---
+# Numpy, pandas, matplotlib tersedia!
+
+# Contoh: operasi dasar
+print("🐍 Hello from Python!")
+print(f"π = {math.pi:.6f}")
+
+# List comprehension
+squares = [x**2 for x in range(1, 6)]
+print("Squares:", squares)
+
+# Dictionary
+data = {"nama": "Budi", "bahasa": "Python", "level": 5}
+print(json.dumps(data, indent=2))
+
+# Input dari user
+# name = input("Siapa namamu? ")
+# print(f"Halo, {name}!")
+`
+  },
+  javascript: {
+    color: '#f59e0b',
+    label: 'JavaScript (ES2024)',
+    libs: ['Fetch API', 'Promise', 'async/await', 'JSON', 'Math', 'Date', 'RegExp', 'Map', 'Set'],
+    default: `// --- JavaScript Playground ---
+// ES2024 supported!
+
+console.log("⚡ Hello from JavaScript!");
+
+// Arrow functions & destructuring
+const add = (a, b) => a + b;
+console.log("3 + 4 =", add(3, 4));
+
+// Array methods
+const langs = ["Python", "JavaScript", "Rust", "Go"];
+const filtered = langs.filter(l => l.length > 4);
+console.log("Long names:", filtered);
+
+// Async/await simulation
+const fetchData = async () => {
+  const data = await Promise.resolve({ status: "ok", count: 42 });
+  console.log("Async result:", JSON.stringify(data));
+};
+fetchData();
+
+// Class
+class Calculator {
+  constructor(val) { this.val = val; }
+  add(n) { this.val += n; return this; }
+  multiply(n) { this.val *= n; return this; }
+  result() { return this.val; }
+}
+const calc = new Calculator(10).add(5).multiply(2);
+console.log("Calc result:", calc.result());
+`
+  },
+  sql: {
+    color: '#10b981',
+    label: 'SQL · SQLite (sql.js)',
+    libs: ['SELECT', 'INSERT', 'UPDATE', 'DELETE', 'JOIN', 'GROUP BY', 'ORDER BY', 'CREATE TABLE', 'INDEX', 'VIEW'],
+    default: `-- --- SQL Playground (SQLite) ---
+
+-- Buat tabel
+CREATE TABLE IF NOT EXISTS karyawan (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  nama TEXT NOT NULL,
+  divisi TEXT,
+  gaji INTEGER,
+  tahun_masuk INTEGER
+);
+
+-- Insert data
+INSERT INTO karyawan (nama, divisi, gaji, tahun_masuk) VALUES
+  ('Budi Santoso', 'Engineering', 8500000, 2020),
+  ('Sari Dewi', 'Engineering', 9200000, 2019),
+  ('Andi Wijaya', 'Design', 7800000, 2021),
+  ('Rina Kusuma', 'Product', 10500000, 2018),
+  ('Doni Pratama', 'Engineering', 11000000, 2017);
+
+-- Query: Rata-rata gaji per divisi
+SELECT 
+  divisi,
+  COUNT(*) as jumlah_karyawan,
+  AVG(gaji) as rata_gaji,
+  MAX(gaji) as gaji_tertinggi
+FROM karyawan
+GROUP BY divisi
+ORDER BY rata_gaji DESC;
+
+-- Query: Karyawan dengan gaji di atas rata-rata
+SELECT nama, gaji
+FROM karyawan
+WHERE gaji > (SELECT AVG(gaji) FROM karyawan)
+ORDER BY gaji DESC;
+`
+  }
+};
+
+const EXTERNAL_CONFIG = {
+  csharp: {
+    icon: '💜',
+    color: '#a855f7',
+    title: 'C# Playground',
+    desc: 'C# memerlukan .NET runtime yang tidak bisa dijalankan langsung di browser. Gunakan platform berikut untuk coding C#:',
+    platforms: [
+      { name: '.NET Fiddle', url: 'https://dotnetfiddle.net/', icon: '🎻' },
+      { name: 'Replit', url: 'https://replit.com/languages/csharp', icon: '♻️' },
+      { name: 'Compiler Explorer', url: 'https://godbolt.org/', icon: '🔭' },
+      { name: 'OneCompiler', url: 'https://onecompiler.com/csharp', icon: '🖥️' },
+    ]
+  },
+  rust: {
+    icon: '🦀',
+    color: '#ef4444',
+    title: 'Rust Playground',
+    desc: 'Rust memerlukan compiler yang tidak bisa dijalankan di browser. Tapi Rust punya playground resmi yang sangat lengkap!',
+    platforms: [
+      { name: 'Rust Playground', url: 'https://play.rust-lang.org/', icon: '🦀' },
+      { name: 'Replit', url: 'https://replit.com/languages/rust', icon: '♻️' },
+      { name: 'Compiler Explorer', url: 'https://godbolt.org/', icon: '🔭' },
+      { name: 'OneCompiler', url: 'https://onecompiler.com/rust', icon: '🖥️' },
+    ]
+  }
+};
+
+// ========== UI HELPERS ==========
+function setStatus(text, ready = false) {
+  document.getElementById('statusText').textContent = text;
+  document.getElementById('statusDot').className = 'status-dot' + (ready ? ' ready' : '');
+}
+
+function setActiveLangColor(color) {
+  document.documentElement.style.setProperty('--active-lang-color', color);
+}
+
+function printOutput(text, type = '') {
+  const wrap = document.getElementById('outputWrap');
+  const ph = document.getElementById('outputPlaceholder');
+  if (ph) ph.style.display = 'none';
+  const div = document.createElement('div');
+  div.className = 'output-line' + (type ? ' ' + type : '');
+  div.textContent = text;
+  wrap.appendChild(div);
+  wrap.scrollTop = wrap.scrollHeight;
+}
+
+function clearOutput() {
+  const wrap = document.getElementById('outputWrap');
+  wrap.innerHTML = '<div class="output-placeholder" id="outputPlaceholder"><div class="big-icon">🖥️</div><div>Output will appear here</div><div style="font-size:11px">Press Run to execute your code</div></div>';
+  document.getElementById('execTime').textContent = '—';
+}
+
+function clearCode() {
+  const editor = document.getElementById('codeEditor');
+  if (editor) editor.value = '';
+}
+
+function showLoading(text) {
+  document.getElementById('loadingOverlay').style.display = 'flex';
+  document.getElementById('loadingText').textContent = text;
+}
+function hideLoading() {
+  document.getElementById('loadingOverlay').style.display = 'none';
+}
+
+function updateBottomBar(lang) {
+  const cfg = LANG_CONFIG[lang];
+  if (!cfg) return;
+  setActiveLangColor(cfg.color);
+  const badges = document.getElementById('libBadges');
+  badges.innerHTML = '<span style="color:var(--muted);margin-right:4px;font-size:10px">LIBRARIES:</span>' +
+    cfg.libs.map(l => `<span class="lib-badge active-lib">${l}</span>`).join('');
+}
+
+// ========== SWITCH LANGUAGE ==========
+document.getElementById('langTabs').addEventListener('click', e => {
+  const tab = e.target.closest('.lang-tab');
+  if (!tab) return;
+  const lang = tab.dataset.lang;
+  switchLang(lang);
+});
+
+function switchLang(lang) {
+  currentLang = lang;
+  // Update tabs
+  document.querySelectorAll('.lang-tab').forEach(t => {
+    t.classList.toggle('active', t.dataset.lang === lang);
+  });
+
+  const isExternal = lang === 'csharp' || lang === 'rust';
+
+  document.getElementById('editorSection').style.display = isExternal ? 'none' : 'block';
+  document.getElementById('externalSection').style.display = isExternal ? 'block' : 'none';
+  document.getElementById('bottomBar').style.display = isExternal ? 'none' : 'flex';
+
+  if (isExternal) {
+    renderExternalPanel(lang);
+    return;
+  }
+
+  const cfg = LANG_CONFIG[lang];
+  setActiveLangColor(cfg.color);
+
+  // Update editor dot color
+  document.getElementById('editorDot').style.background = cfg.color;
+  document.getElementById('outputDot').style.background = cfg.color;
+  document.getElementById('editorLabel').textContent = cfg.label.toUpperCase();
+
+  // Load default code if editor is empty or switching
+  const editor = document.getElementById('codeEditor');
+  editor.value = cfg.default;
+  editor.style.caretColor = cfg.color;
+
+  // Update run button
+  const runBtn = document.getElementById('runBtn');
+  runBtn.style.background = `linear-gradient(135deg, ${cfg.color}, color-mix(in srgb, ${cfg.color} 70%, white))`;
+
+  updateBottomBar(lang);
+  clearOutput();
+
+  if (lang === 'python') {
+    if (!pyodideReady) {
+      setStatus('Loading Python runtime...');
+    } else {
+      setStatus('Python ready', true);
+    }
+  } else if (lang === 'javascript') {
+    setStatus('JavaScript ready', true);
+  } else if (lang === 'sql') {
+    if (!sqlReady) {
+      setStatus('Loading SQLite...');
+    } else {
+      setStatus('SQL (SQLite) ready', true);
+    }
+  }
+}
+
+function renderExternalPanel(lang) {
+  const cfg = EXTERNAL_CONFIG[lang];
+  const el = document.getElementById('externalContent');
+  el.style.setProperty('--tab-color', cfg.color);
+  el.innerHTML = `
+    <div class="ext-icon">${cfg.icon}</div>
+    <div class="ext-title">${cfg.title}</div>
+    <div class="ext-desc">${cfg.desc}</div>
+    <div class="ext-platforms">
+      ${cfg.platforms.map(p => `
+        <a href="${p.url}" target="_blank" class="ext-link" style="--tab-color:${cfg.color}">
+          ${p.icon} ${p.name}
+        </a>
+      `).join('')}
+    </div>
+  `;
+}
+
+// ========== INPUT MODAL ==========
+let inputResolve = null;
+function askInput(prompt) {
+  return new Promise(resolve => {
+    inputResolve = resolve;
+    document.getElementById('inputPrompt').textContent = prompt || 'Enter value:';
+    document.getElementById('inputField').value = '';
+    document.getElementById('inputModal').style.display = 'flex';
+    setTimeout(() => document.getElementById('inputField').focus(), 50);
+  });
+}
+function submitInput() {
+  const val = document.getElementById('inputField').value;
+  document.getElementById('inputModal').style.display = 'none';
+  if (inputResolve) { inputResolve(val); inputResolve = null; }
+}
+document.getElementById('inputOkBtn').addEventListener('click', submitInput);
+document.getElementById('inputField').addEventListener('keydown', e => {
+  if (e.key === 'Enter') submitInput();
+});
+
+// ========== RUN CODE ==========
+async function runCode() {
+  if (isRunning) return;
+  const code = document.getElementById('codeEditor').value.trim();
+  if (!code) return;
+
+  isRunning = true;
+  document.getElementById('runBtn').disabled = true;
+  clearOutput();
+  startTime = performance.now();
+
+  try {
+    if (currentLang === 'python') await runPython(code);
+    else if (currentLang === 'javascript') await runJavaScript(code);
+    else if (currentLang === 'sql') await runSQL(code);
+  } catch(err) {
+    printOutput('Fatal: ' + err.message, 'error');
+  }
+
+  const elapsed = ((performance.now() - startTime) / 1000).toFixed(3);
+  document.getElementById('execTime').textContent = `⏱ ${elapsed}s`;
+  document.getElementById('runBtn').disabled = false;
+  isRunning = false;
+}
+
+// ========== PYTHON ==========
+async function loadPyodide() {
+  try {
+    showLoading('Loading Python (Pyodide)...');
+    setStatus('Loading Python...');
+    pyodide = await loadPyodideFromCDN();
+    pyodideReady = true;
+    hideLoading();
+    setStatus('Python ready', true);
+    printOutput('✅ Python (Pyodide) loaded successfully!', 'success');
+    printOutput('📦 Available: numpy, pandas, matplotlib, scipy, json, math, re, datetime...', 'info');
+  } catch(e) {
+    hideLoading();
+    setStatus('Python load failed');
+    printOutput('❌ Failed to load Pyodide: ' + e.message, 'error');
+  }
+}
+
+async function loadPyodideFromCDN() {
+  return new Promise((resolve, reject) => {
+    const script = document.createElement('script');
+    script.src = 'https://cdn.jsdelivr.net/pyodide/v0.26.2/full/pyodide.js';
+    script.onload = async () => {
+      try {
+        const py = await window.loadPyodide({
+          indexURL: 'https://cdn.jsdelivr.net/pyodide/v0.26.2/full/'
+        });
+        resolve(py);
+      } catch(e) { reject(e); }
+    };
+    script.onerror = () => reject(new Error('Failed to load Pyodide script'));
+    document.head.appendChild(script);
+  });
+}
+
+async function runPython(code) {
+  if (!pyodideReady) {
+    await loadPyodide();
+    if (!pyodideReady) return;
+  }
+
+  const outputs = [];
+  const inputQueue = [];
+
+  // Redirect stdout
+  pyodide.runPython(`
+import sys
+import io
+class CustomStdout(io.StringIO):
+    pass
+sys.stdout = CustomStdout()
+sys.stderr = CustomStdout()
+  `);
+
+  // Override input
+  pyodide.globals.set('__input_func__', async (prompt) => {
+    const val = await askInput(prompt || 'Enter value:');
+    return val;
+  });
+
+  try {
+    // Replace input() with our async version (wrap in async context)
+    const wrappedCode = `
+import sys, io, builtins
+
+_captured = io.StringIO()
+sys.stdout = _captured
+sys.stderr = _captured
+
+${code}
+
+_out = _captured.getvalue()
+_captured.close()
+_out
+`;
+
+    let result = await pyodide.runPythonAsync(wrappedCode);
+    // Get captured output
+    const output = pyodide.runPython(`
+import sys, io
+_captured.getvalue() if not _captured.closed else ""
+`);
+
+    if (typeof result === 'string' && result) {
+      result.split('\n').forEach(line => {
+        if (line !== '') printOutput(line);
+      });
+    }
+
+  } catch(err) {
+    // Fallback: simpler run
+    try {
+      pyodide.runPython(`
+import sys, io
+_buf = io.StringIO()
+sys.stdout = _buf
+sys.stderr = _buf
+`);
+      await pyodide.runPythonAsync(code);
+      const out = pyodide.runPython(`
+_v = _buf.getvalue()
+sys.stdout = sys.__stdout__
+_v
+`);
+      if (out) {
+        out.split('\n').forEach(line => {
+          if (line !== '') printOutput(line);
+        });
+      }
+    } catch(err2) {
+      const msg = err2.message || String(err2);
+      // Clean up traceback for display
+      const lines = msg.split('\n');
+      lines.forEach(l => printOutput(l, 'error'));
+    }
+  }
+}
+
+// ========== JAVASCRIPT ==========
+async function runJavaScript(code) {
+  const logs = [];
+  const origLog = console.log;
+  const origError = console.error;
+  const origWarn = console.warn;
+  const origInfo = console.info;
+
+  const capture = (type) => (...args) => {
+    const text = args.map(a => {
+      if (typeof a === 'object') {
+        try { return JSON.stringify(a, null, 2); }
+        catch { return String(a); }
+      }
+      return String(a);
+    }).join(' ');
+    printOutput(text, type === 'error' ? 'error' : type === 'warn' ? 'warn' : '');
+  };
+
+  console.log = capture('log');
+  console.error = capture('error');
+  console.warn = capture('warn');
+  console.info = capture('info');
+
+  try {
+    const asyncCode = `(async () => { ${code} })()`;
+    await eval(asyncCode);
+  } catch(err) {
+    printOutput('❌ ' + err.name + ': ' + err.message, 'error');
+    if (err.stack) {
+      const stackLines = err.stack.split('\n').slice(1, 4);
+      stackLines.forEach(l => printOutput('  ' + l.trim(), 'error'));
+    }
+  } finally {
+    console.log = origLog;
+    console.error = origError;
+    console.warn = origWarn;
+    console.info = origInfo;
+  }
+}
+
+// ========== SQL ==========
+async function loadSQL() {
+  if (sqlReady) return;
+  showLoading('Loading SQLite (sql.js)...');
+  setStatus('Loading SQLite...');
+  try {
+    const SQL = await initSqlJs({
+      locateFile: f => `https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.10.2/${f}`
+    });
+    sqlDB = new SQL.Database();
+    sqlReady = true;
+    hideLoading();
+    setStatus('SQL (SQLite) ready', true);
+    printOutput('✅ SQLite ready!', 'success');
+    printOutput('💡 Run CREATE TABLE, INSERT, SELECT, UPDATE, DELETE...', 'info');
+  } catch(e) {
+    hideLoading();
+    setStatus('SQLite failed');
+    printOutput('❌ Failed to load sql.js: ' + e.message, 'error');
+  }
+}
+
+async function runSQL(code) {
+  if (!sqlReady) {
+    await loadSQL();
+    if (!sqlReady) return;
+  }
+
+  // Split multiple statements
+  const statements = code.split(';').map(s => s.trim()).filter(s => s.length > 0);
+
+  for (const stmt of statements) {
+    try {
+      const results = sqlDB.exec(stmt + ';');
+      if (results.length > 0) {
+        results.forEach(res => {
+          // Print column headers
+          const header = '┌ ' + res.columns.join(' │ ') + ' ┐';
+          printOutput(header, 'success');
+          printOutput('├' + '─'.repeat(header.length - 2) + '┤', 'success');
+          // Print rows
+          res.values.forEach(row => {
+            printOutput('│ ' + row.join(' │ ') + ' │');
+          });
+          printOutput('└' + '─'.repeat(header.length - 2) + '┘', 'success');
+          printOutput(`  ${res.values.length} row(s) returned`, 'info');
+        });
+      } else {
+        // DDL / DML
+        const lower = stmt.toLowerCase().trim();
+        if (lower.startsWith('create')) printOutput('✅ Table created', 'success');
+        else if (lower.startsWith('insert')) printOutput('✅ Row(s) inserted', 'success');
+        else if (lower.startsWith('update')) printOutput('✅ Row(s) updated', 'success');
+        else if (lower.startsWith('delete')) printOutput('✅ Row(s) deleted', 'success');
+        else if (lower.startsWith('drop')) printOutput('✅ Dropped', 'success');
+        else printOutput('✅ OK', 'success');
+      }
+    } catch(err) {
+      printOutput('❌ SQL Error: ' + err.message, 'error');
+      printOutput('   Statement: ' + stmt.substring(0, 60) + (stmt.length > 60 ? '...' : ''), 'error');
+    }
+  }
+}
+
+// ========== KEYBOARD SHORTCUT ==========
+document.addEventListener('keydown', e => {
+  if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
+    e.preventDefault();
+    runCode();
+  }
+});
+
+// Indent with Tab
+document.getElementById('codeEditor').addEventListener('keydown', e => {
+  if (e.key === 'Tab') {
+    e.preventDefault();
+    const ta = e.target;
+    const start = ta.selectionStart;
+    const end = ta.selectionEnd;
+    ta.value = ta.value.substring(0, start) + '    ' + ta.value.substring(end);
+    ta.selectionStart = ta.selectionEnd = start + 4;
+  }
+});
+
+// ========== INIT ==========
+async function init() {
+  switchLang('python');
+  updateBottomBar('python');
+  setStatus('Loading Python runtime...');
+
+  // Load Python in background
+  loadPyodide();
+
+  // Load SQL in background
+  initSqlJs({
+    locateFile: f => `https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.10.2/${f}`
+  }).then(SQL => {
+    sqlDB = new SQL.Database();
+    sqlReady = true;
+  }).catch(() => {});
+}
+
+init();
+</script>
+</body>
+</html>
