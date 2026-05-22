@@ -3,889 +3,636 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>CodeLab — Multi-Language Playground</title>
-<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&family=Syne:wght@400;600;700;800&display=swap" rel="stylesheet">
+<title>CodeLab Notebook</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Cabinet+Grotesk:wght@400;500;700;800&display=swap" rel="stylesheet">
 <style>
-  :root {
-    --bg: #0a0a0f;
-    --surface: #111118;
-    --surface2: #1a1a24;
-    --border: #2a2a3a;
-    --accent: #7c6af7;
-    --accent2: #f97316;
-    --green: #22d3a3;
-    --red: #f87171;
-    --yellow: #fbbf24;
-    --text: #e8e8f0;
-    --muted: #6b6b8a;
-    --py: #3b82f6;
-    --js: #f59e0b;
-    --sql: #10b981;
-    --cs: #a855f7;
-    --rs: #ef4444;
-  }
+:root {
+  --bg: #f0f0e8;
+  --surface: #fafaf5;
+  --surface2: #e8e8e0;
+  --border: #d0d0c0;
+  --border2: #b8b8a8;
+  --text: #1a1a14;
+  --muted: #888878;
+  --py: #2563eb;
+  --js: #d97706;
+  --sql: #059669;
+  --cs: #7c3aed;
+  --rs: #dc2626;
+  --accent: #1a1a14;
+  --shadow: 0 2px 8px rgba(0,0,0,0.08);
+  --shadow-lg: 0 4px 20px rgba(0,0,0,0.12);
+}
 
-  * { margin: 0; padding: 0; box-sizing: border-box; }
+* { margin:0; padding:0; box-sizing:border-box; }
 
-  body {
-    font-family: 'Syne', sans-serif;
-    background: var(--bg);
-    color: var(--text);
-    min-height: 100vh;
-    overflow-x: hidden;
-  }
+body {
+  font-family: 'Cabinet Grotesk', sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+  background-image: radial-gradient(circle at 20px 20px, rgba(0,0,0,0.03) 1px, transparent 0);
+  background-size: 40px 40px;
+}
 
-  /* BG Grid */
-  body::before {
-    content: '';
-    position: fixed;
-    inset: 0;
-    background-image:
-      linear-gradient(rgba(124,106,247,0.04) 1px, transparent 1px),
-      linear-gradient(90deg, rgba(124,106,247,0.04) 1px, transparent 1px);
-    background-size: 40px 40px;
-    pointer-events: none;
-    z-index: 0;
-  }
+/* HEADER */
+.header {
+  background: var(--text);
+  color: var(--bg);
+  padding: 0 24px;
+  height: 56px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  box-shadow: var(--shadow-lg);
+}
+.header-left { display:flex; align-items:center; gap:12px; }
+.logo { font-size:18px; font-weight:800; letter-spacing:-0.5px; }
+.logo span { opacity:0.5; }
+.header-status {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size:11px;
+  opacity:0.5;
+  padding: 4px 10px;
+  border: 1px solid rgba(255,255,255,0.2);
+  border-radius: 20px;
+}
+.header-status.ready { opacity:1; color:#4ade80; border-color:rgba(74,222,128,0.4); }
 
-  .glow-orb {
-    position: fixed;
-    width: 600px; height: 600px;
-    background: radial-gradient(circle, rgba(124,106,247,0.08) 0%, transparent 70%);
-    top: -200px; right: -200px;
-    pointer-events: none;
-    z-index: 0;
-    animation: orbFloat 8s ease-in-out infinite;
-  }
-  .glow-orb2 {
-    position: fixed;
-    width: 400px; height: 400px;
-    background: radial-gradient(circle, rgba(249,115,22,0.06) 0%, transparent 70%);
-    bottom: -100px; left: -100px;
-    pointer-events: none;
-    z-index: 0;
-    animation: orbFloat 12s ease-in-out infinite reverse;
-  }
-  @keyframes orbFloat {
-    0%, 100% { transform: translate(0, 0); }
-    50% { transform: translate(30px, 30px); }
-  }
+.header-actions { display:flex; gap:8px; align-items:center; }
+.hbtn {
+  padding: 7px 14px;
+  border-radius: 6px;
+  font-family: 'Cabinet Grotesk', sans-serif;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  border: none;
+  transition: all 0.15s;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.hbtn-outline {
+  background: transparent;
+  border: 1px solid rgba(255,255,255,0.25);
+  color: rgba(255,255,255,0.8);
+}
+.hbtn-outline:hover { background: rgba(255,255,255,0.1); color:#fff; }
+.hbtn-solid {
+  background: var(--bg);
+  color: var(--text);
+}
+.hbtn-solid:hover { background: #e0e0d8; }
 
-  .container {
-    position: relative;
-    z-index: 1;
-    max-width: 1200px;
-    margin: 0 auto;
-    padding: 0 20px;
-  }
+/* NOTEBOOK */
+.notebook {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 32px 20px 80px;
+}
 
-  /* Header */
-  header {
-    padding: 24px 0 20px;
-    border-bottom: 1px solid var(--border);
-    margin-bottom: 28px;
-  }
-  .header-inner {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    flex-wrap: wrap;
-    gap: 16px;
-  }
-  .logo {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-  }
-  .logo-icon {
-    width: 40px; height: 40px;
-    background: linear-gradient(135deg, var(--accent), var(--accent2));
-    border-radius: 10px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 20px;
-  }
-  .logo-text {
-    font-size: 22px;
-    font-weight: 800;
-    letter-spacing: -0.5px;
-  }
-  .logo-text span { color: var(--accent); }
-  .logo-sub {
-    font-size: 11px;
-    color: var(--muted);
-    font-family: 'JetBrains Mono', monospace;
-    letter-spacing: 1px;
-  }
-  .status-bar {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    font-size: 12px;
-    color: var(--muted);
-    font-family: 'JetBrains Mono', monospace;
-  }
-  .status-dot {
-    width: 8px; height: 8px;
-    border-radius: 50%;
-    background: var(--muted);
-    animation: pulse 2s infinite;
-  }
-  .status-dot.ready { background: var(--green); }
-  @keyframes pulse {
-    0%, 100% { opacity: 1; }
-    50% { opacity: 0.4; }
-  }
+.notebook-title-area {
+  margin-bottom: 28px;
+  padding-bottom: 20px;
+  border-bottom: 2px solid var(--border);
+}
+.notebook-title {
+  font-size: 28px;
+  font-weight: 800;
+  letter-spacing: -1px;
+  margin-bottom: 6px;
+  outline: none;
+  background: transparent;
+  border: none;
+  width: 100%;
+  font-family: 'Cabinet Grotesk', sans-serif;
+  color: var(--text);
+}
+.notebook-title:empty::before { content: 'Untitled Notebook'; color: var(--muted); }
+.notebook-meta {
+  font-size: 12px;
+  color: var(--muted);
+  font-family: 'IBM Plex Mono', monospace;
+  display: flex;
+  gap: 16px;
+}
 
-  /* Language Tabs */
-  .lang-tabs {
-    display: flex;
-    gap: 8px;
-    margin-bottom: 20px;
-    flex-wrap: wrap;
-  }
-  .lang-tab {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    padding: 10px 18px;
-    border-radius: 10px;
-    border: 1px solid var(--border);
-    background: var(--surface);
-    cursor: pointer;
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 13px;
-    font-weight: 600;
-    color: var(--muted);
-    transition: all 0.2s;
-    position: relative;
-    overflow: hidden;
-  }
-  .lang-tab::before {
-    content: '';
-    position: absolute;
-    inset: 0;
-    opacity: 0;
-    transition: opacity 0.2s;
-  }
-  .lang-tab:hover { color: var(--text); border-color: #3a3a4a; }
-  .lang-tab.active {
-    color: var(--text);
-    border-color: var(--tab-color, var(--accent));
-    background: color-mix(in srgb, var(--tab-color, var(--accent)) 12%, var(--surface));
-    box-shadow: 0 0 20px color-mix(in srgb, var(--tab-color, var(--accent)) 20%, transparent);
-  }
-  .lang-tab .dot {
-    width: 8px; height: 8px;
-    border-radius: 50%;
-    background: var(--tab-color, var(--muted));
-    flex-shrink: 0;
-  }
-  .lang-tab.external-tab {
-    opacity: 0.7;
-    cursor: pointer;
-  }
-  .lang-tab.external-tab:hover { opacity: 1; }
-  .ext-badge {
-    font-size: 9px;
-    padding: 2px 5px;
-    border-radius: 4px;
-    background: rgba(255,255,255,0.08);
-    letter-spacing: 0.5px;
-  }
+/* CELLS */
+.cells-container { display:flex; flex-direction:column; gap:12px; }
 
-  /* Main Layout */
-  .editor-layout {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 16px;
-    height: 520px;
-  }
-  @media (max-width: 768px) {
-    .editor-layout { grid-template-columns: 1fr; height: auto; }
-  }
+.cell {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: var(--shadow);
+  transition: box-shadow 0.2s, border-color 0.2s;
+  position: relative;
+}
+.cell:hover { box-shadow: var(--shadow-lg); }
+.cell.active { border-color: var(--cell-color, #1a1a14); box-shadow: 0 0 0 2px color-mix(in srgb, var(--cell-color, #1a1a14) 15%, transparent), var(--shadow-lg); }
 
-  .panel {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 14px;
-    display: flex;
-    flex-direction: column;
-    overflow: hidden;
-  }
+/* Cell left bar */
+.cell::before {
+  content: '';
+  position: absolute;
+  left: 0; top: 0; bottom: 0;
+  width: 3px;
+  background: var(--cell-color, var(--muted));
+  opacity: 0.5;
+  transition: opacity 0.2s;
+}
+.cell.active::before { opacity: 1; }
 
-  .panel-header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 12px 16px;
-    border-bottom: 1px solid var(--border);
-    background: var(--surface2);
-    flex-shrink: 0;
-  }
-  .panel-title {
-    font-size: 11px;
-    font-weight: 700;
-    letter-spacing: 1.5px;
-    color: var(--muted);
-    text-transform: uppercase;
-    font-family: 'JetBrains Mono', monospace;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-  }
-  .panel-title-dot {
-    width: 6px; height: 6px;
-    border-radius: 50%;
-    background: var(--active-lang-color, var(--accent));
-  }
+/* Cell Header */
+.cell-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 12px 8px 16px;
+  background: var(--surface2);
+  border-bottom: 1px solid var(--border);
+  gap: 8px;
+}
+.cell-left { display:flex; align-items:center; gap:8px; }
+.cell-num {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 11px;
+  color: var(--muted);
+  min-width: 24px;
+}
+.lang-selector {
+  display: flex;
+  gap: 4px;
+}
+.lang-pill {
+  padding: 3px 9px;
+  border-radius: 20px;
+  font-size: 11px;
+  font-weight: 700;
+  font-family: 'IBM Plex Mono', monospace;
+  cursor: pointer;
+  border: 1px solid transparent;
+  transition: all 0.15s;
+  color: var(--muted);
+  background: transparent;
+}
+.lang-pill:hover { background: var(--border); color: var(--text); }
+.lang-pill.active {
+  background: var(--lang-pill-color, var(--text));
+  color: white;
+  border-color: var(--lang-pill-color, var(--text));
+}
+.lang-pill.ext-pill { opacity: 0.6; }
+.lang-pill.ext-pill.active { opacity: 1; }
 
-  .btn-run {
-    display: flex;
-    align-items: center;
-    gap: 7px;
-    padding: 7px 16px;
-    background: linear-gradient(135deg, var(--active-lang-color, var(--accent)), color-mix(in srgb, var(--active-lang-color, var(--accent)) 70%, #fff));
-    border: none;
-    border-radius: 8px;
-    color: white;
-    font-family: 'Syne', sans-serif;
-    font-size: 12px;
-    font-weight: 700;
-    cursor: pointer;
-    transition: all 0.2s;
-    letter-spacing: 0.5px;
-  }
-  .btn-run:hover { transform: translateY(-1px); box-shadow: 0 4px 12px rgba(0,0,0,0.3); }
-  .btn-run:active { transform: translateY(0); }
-  .btn-run:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
-  .btn-run .run-icon { font-size: 14px; }
+.cell-right { display:flex; align-items:center; gap:6px; }
+.cell-btn {
+  width: 28px; height: 28px;
+  border-radius: 6px;
+  border: 1px solid var(--border);
+  background: transparent;
+  cursor: pointer;
+  font-size: 13px;
+  display: flex; align-items:center; justify-content:center;
+  transition: all 0.15s;
+  color: var(--muted);
+}
+.cell-btn:hover { background: var(--border); color: var(--text); }
+.cell-btn.danger:hover { background: #fee2e2; border-color: #fca5a5; color: #dc2626; }
 
-  .btn-clear {
-    padding: 7px 12px;
-    background: transparent;
-    border: 1px solid var(--border);
-    border-radius: 8px;
-    color: var(--muted);
-    font-size: 12px;
-    cursor: pointer;
-    font-family: 'Syne', sans-serif;
-    transition: all 0.2s;
-  }
-  .btn-clear:hover { color: var(--text); border-color: #3a3a4a; }
+.run-btn {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  padding: 5px 12px;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 700;
+  font-family: 'Cabinet Grotesk', sans-serif;
+  cursor: pointer;
+  border: none;
+  background: var(--cell-color, var(--text));
+  color: white;
+  transition: all 0.15s;
+}
+.run-btn:hover { filter: brightness(1.15); transform: translateY(-1px); }
+.run-btn:active { transform: translateY(0); }
+.run-btn:disabled { opacity: 0.4; cursor:not-allowed; transform:none; }
 
-  /* Editor */
-  .editor-wrap {
-    flex: 1;
-    overflow: hidden;
-    position: relative;
-  }
-  textarea.code-editor {
-    width: 100%;
-    height: 100%;
-    background: transparent;
-    border: none;
-    outline: none;
-    resize: none;
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 13.5px;
-    line-height: 1.7;
-    color: var(--text);
-    padding: 16px;
-    tab-size: 4;
-    -moz-tab-size: 4;
-    caret-color: var(--active-lang-color, var(--accent));
-  }
-  textarea.code-editor::selection {
-    background: rgba(124,106,247,0.25);
-  }
+/* Editor */
+.cell-editor-wrap { position: relative; }
+textarea.cell-editor {
+  width: 100%;
+  min-height: 120px;
+  background: transparent;
+  border: none;
+  outline: none;
+  resize: none;
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 13px;
+  line-height: 1.7;
+  color: var(--text);
+  padding: 14px 14px 14px 18px;
+  tab-size: 4;
+  caret-color: var(--cell-color, var(--text));
+}
+textarea.cell-editor::placeholder { color: var(--muted); }
 
-  /* Output */
-  .output-wrap {
-    flex: 1;
-    overflow-y: auto;
-    padding: 16px;
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 13px;
-    line-height: 1.7;
-  }
-  .output-wrap::-webkit-scrollbar { width: 4px; }
-  .output-wrap::-webkit-scrollbar-track { background: transparent; }
-  .output-wrap::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+/* Output */
+.cell-output {
+  border-top: 1px solid var(--border);
+  background: #1a1a14;
+  color: #e8e8e0;
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 12.5px;
+  line-height: 1.7;
+  padding: 12px 14px 12px 18px;
+  max-height: 300px;
+  overflow-y: auto;
+  display: none;
+}
+.cell-output.visible { display: block; }
+.cell-output::-webkit-scrollbar { width: 4px; }
+.cell-output::-webkit-scrollbar-track { background: transparent; }
+.cell-output::-webkit-scrollbar-thumb { background: #3a3a30; border-radius: 2px; }
 
-  .output-line { margin-bottom: 2px; word-break: break-all; white-space: pre-wrap; }
-  .output-line.error { color: var(--red); }
-  .output-line.info { color: var(--muted); font-style: italic; }
-  .output-line.success { color: var(--green); }
-  .output-line.warn { color: var(--yellow); }
-  .output-placeholder {
-    color: var(--muted);
-    font-style: italic;
-    font-size: 12px;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    height: 100%;
-    gap: 8px;
-    text-align: center;
-  }
-  .output-placeholder .big-icon { font-size: 32px; opacity: 0.4; }
+.out-line { white-space: pre-wrap; word-break: break-all; margin-bottom: 1px; }
+.out-line.err { color: #f87171; }
+.out-line.info { color: #6b7280; font-style: italic; }
+.out-line.ok { color: #4ade80; }
+.out-line.warn { color: #fbbf24; }
+.out-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 8px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid #2a2a20;
+}
+.out-label { font-size: 10px; color: #4a4a3a; letter-spacing: 1px; text-transform: uppercase; }
+.out-time { font-size: 10px; color: #4a4a3a; }
 
-  /* Loading overlay */
-  .loading-overlay {
-    position: absolute;
-    inset: 0;
-    background: rgba(10,10,15,0.85);
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    gap: 12px;
-    backdrop-filter: blur(4px);
-    z-index: 10;
-    border-radius: 14px;
-  }
-  .spinner {
-    width: 36px; height: 36px;
-    border: 3px solid var(--border);
-    border-top-color: var(--accent);
-    border-radius: 50%;
-    animation: spin 0.8s linear infinite;
-  }
-  @keyframes spin { to { transform: rotate(360deg); } }
-  .loading-text {
-    font-size: 13px;
-    color: var(--muted);
-    font-family: 'JetBrains Mono', monospace;
-  }
+/* External cell */
+.cell-external {
+  padding: 20px 18px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+.ext-info { flex: 1; min-width: 200px; }
+.ext-info-title { font-size: 14px; font-weight: 700; margin-bottom: 4px; }
+.ext-info-desc { font-size: 12px; color: var(--muted); }
+.ext-links { display: flex; gap: 8px; flex-wrap: wrap; }
+.ext-link {
+  padding: 6px 12px;
+  border-radius: 6px;
+  border: 1px solid var(--border);
+  font-size: 12px;
+  font-weight: 600;
+  font-family: 'IBM Plex Mono', monospace;
+  color: var(--text);
+  text-decoration: none;
+  background: var(--surface2);
+  transition: all 0.15s;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+.ext-link:hover { border-color: var(--cell-color); background: color-mix(in srgb, var(--cell-color) 10%, var(--surface2)); }
 
-  /* External Panel */
-  .external-panel {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 14px;
-    padding: 40px 32px;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    text-align: center;
-    gap: 24px;
-  }
-  .ext-icon { font-size: 48px; }
-  .ext-title { font-size: 20px; font-weight: 800; }
-  .ext-desc { font-size: 14px; color: var(--muted); line-height: 1.6; max-width: 400px; }
-  .ext-platforms {
-    display: flex;
-    gap: 12px;
-    flex-wrap: wrap;
-    justify-content: center;
-  }
-  .ext-link {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    padding: 10px 20px;
-    border-radius: 10px;
-    border: 1px solid var(--border);
-    color: var(--text);
-    text-decoration: none;
-    font-size: 13px;
-    font-weight: 600;
-    font-family: 'JetBrains Mono', monospace;
-    background: var(--surface2);
-    transition: all 0.2s;
-  }
-  .ext-link:hover {
-    border-color: var(--tab-color, var(--accent));
-    background: color-mix(in srgb, var(--tab-color, var(--accent)) 12%, var(--surface2));
-    transform: translateY(-2px);
-  }
+/* ADD CELL BUTTON */
+.add-cell-area {
+  display: flex;
+  justify-content: center;
+  margin-top: 8px;
+}
+.add-cell-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 20px;
+  border-radius: 8px;
+  border: 2px dashed var(--border2);
+  background: transparent;
+  color: var(--muted);
+  font-family: 'Cabinet Grotesk', sans-serif;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.add-cell-btn:hover {
+  border-color: var(--text);
+  color: var(--text);
+  background: var(--surface);
+}
 
-  /* Bottom Bar */
-  .bottom-bar {
-    margin-top: 16px;
-    padding: 12px 16px;
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 10px;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    font-size: 11px;
-    font-family: 'JetBrains Mono', monospace;
-    color: var(--muted);
-    flex-wrap: wrap;
-    gap: 8px;
-  }
-  .lib-badges {
-    display: flex;
-    gap: 6px;
-    flex-wrap: wrap;
-    align-items: center;
-  }
-  .lib-badge {
-    padding: 3px 8px;
-    border-radius: 5px;
-    background: var(--surface2);
-    border: 1px solid var(--border);
-    font-size: 10px;
-    color: var(--muted);
-  }
-  .lib-badge.active-lib {
-    color: var(--active-lang-color, var(--accent));
-    border-color: color-mix(in srgb, var(--active-lang-color, var(--accent)) 40%, transparent);
-  }
+/* Lang picker modal */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.4);
+  backdrop-filter: blur(4px);
+  z-index: 200;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.modal-box {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 24px;
+  width: 380px;
+  max-width: 90vw;
+  box-shadow: var(--shadow-lg);
+}
+.modal-title { font-size: 16px; font-weight: 800; margin-bottom: 16px; }
+.lang-options { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.lang-option {
+  padding: 14px;
+  border-radius: 10px;
+  border: 1px solid var(--border);
+  background: var(--surface2);
+  cursor: pointer;
+  transition: all 0.15s;
+  text-align: left;
+}
+.lang-option:hover { border-color: var(--opt-color); background: color-mix(in srgb, var(--opt-color) 8%, var(--surface2)); transform: translateY(-1px); }
+.lang-option .opt-name { font-size: 14px; font-weight: 700; color: var(--opt-color); margin-bottom: 2px; }
+.lang-option .opt-desc { font-size: 11px; color: var(--muted); font-family: 'IBM Plex Mono', monospace; }
+.lang-option.ext-opt { opacity: 0.75; }
+.modal-cancel {
+  width: 100%;
+  margin-top: 12px;
+  padding: 10px;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  background: transparent;
+  color: var(--muted);
+  font-family: 'Cabinet Grotesk', sans-serif;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.modal-cancel:hover { background: var(--surface2); color: var(--text); }
 
-  /* Input modal */
-  .input-modal {
-    position: fixed;
-    inset: 0;
-    background: rgba(0,0,0,0.7);
-    backdrop-filter: blur(4px);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    z-index: 1000;
-  }
-  .input-modal-box {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 14px;
-    padding: 28px;
-    width: 420px;
-    max-width: 90vw;
-  }
-  .input-modal-title { font-size: 16px; font-weight: 700; margin-bottom: 8px; }
-  .input-modal-prompt { font-size: 13px; color: var(--muted); margin-bottom: 16px; font-family: 'JetBrains Mono', monospace; background: var(--surface2); padding: 8px 12px; border-radius: 6px; }
-  .input-modal-field {
-    width: 100%;
-    background: var(--surface2);
-    border: 1px solid var(--border);
-    border-radius: 8px;
-    padding: 10px 14px;
-    color: var(--text);
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 14px;
-    outline: none;
-    margin-bottom: 16px;
-    transition: border-color 0.2s;
-  }
-  .input-modal-field:focus { border-color: var(--accent); }
-  .input-modal-btns { display: flex; gap: 8px; justify-content: flex-end; }
-  .btn-ok {
-    padding: 8px 20px;
-    background: var(--accent);
-    border: none;
-    border-radius: 8px;
-    color: white;
-    font-family: 'Syne', sans-serif;
-    font-weight: 700;
-    font-size: 13px;
-    cursor: pointer;
-  }
+/* Input modal */
+.input-modal-box {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 24px;
+  width: 400px;
+  max-width: 90vw;
+  box-shadow: var(--shadow-lg);
+}
+.input-modal-title { font-size: 15px; font-weight: 800; margin-bottom: 10px; }
+.input-modal-prompt {
+  font-size: 12px;
+  color: var(--muted);
+  margin-bottom: 12px;
+  font-family: 'IBM Plex Mono', monospace;
+  background: var(--surface2);
+  padding: 8px 12px;
+  border-radius: 6px;
+}
+.input-field {
+  width: 100%;
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 10px 14px;
+  color: var(--text);
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 14px;
+  outline: none;
+  margin-bottom: 14px;
+  transition: border-color 0.2s;
+}
+.input-field:focus { border-color: var(--text); }
+.input-btns { display:flex; gap:8px; justify-content:flex-end; }
+.btn-ok {
+  padding: 8px 20px;
+  background: var(--text);
+  border: none;
+  border-radius: 8px;
+  color: var(--bg);
+  font-family: 'Cabinet Grotesk', sans-serif;
+  font-weight: 700;
+  font-size: 13px;
+  cursor: pointer;
+}
 
-  /* Responsive */
-  @media (max-width: 600px) {
-    .editor-layout { height: auto; }
-    .panel { height: 320px; }
-  }
+/* Toast */
+.toast {
+  position: fixed;
+  bottom: 24px;
+  left: 50%;
+  transform: translateX(-50%) translateY(80px);
+  background: var(--text);
+  color: var(--bg);
+  padding: 10px 20px;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 700;
+  z-index: 999;
+  transition: transform 0.3s ease;
+  pointer-events: none;
+  white-space: nowrap;
+}
+.toast.show { transform: translateX(-50%) translateY(0); }
+
+/* Loading spinner inline */
+.spin {
+  display: inline-block;
+  width: 12px; height: 12px;
+  border: 2px solid rgba(255,255,255,0.3);
+  border-top-color: white;
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+  vertical-align: middle;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+@media (max-width: 600px) {
+  .notebook { padding: 16px 12px 80px; }
+  .lang-options { grid-template-columns: 1fr; }
+  .header { padding: 0 12px; }
+}
 </style>
 </head>
 <body>
 
-<div class="glow-orb"></div>
-<div class="glow-orb2"></div>
-
-<div class="container">
-  <header>
-    <div class="header-inner">
-      <div class="logo">
-        <div class="logo-icon">⚡</div>
-        <div>
-          <div class="logo-text">Code<span>Lab</span></div>
-          <div class="logo-sub">MULTI-LANGUAGE PLAYGROUND</div>
-        </div>
-      </div>
-      <div class="status-bar">
-        <div class="status-dot" id="statusDot"></div>
-        <span id="statusText">Initializing...</span>
-      </div>
-    </div>
-  </header>
-
-  <!-- Language Tabs -->
-  <div class="lang-tabs" id="langTabs">
-    <button class="lang-tab active" data-lang="python" style="--tab-color: var(--py)">
-      <div class="dot" style="background:var(--py)"></div>Python
-    </button>
-    <button class="lang-tab" data-lang="javascript" style="--tab-color: var(--js)">
-      <div class="dot" style="background:var(--js)"></div>JavaScript
-    </button>
-    <button class="lang-tab" data-lang="sql" style="--tab-color: var(--sql)">
-      <div class="dot" style="background:var(--sql)"></div>SQL
-    </button>
-    <button class="lang-tab external-tab" data-lang="csharp" style="--tab-color: var(--cs)">
-      <div class="dot" style="background:var(--cs)"></div>C# <span class="ext-badge">EXTERNAL</span>
-    </button>
-    <button class="lang-tab external-tab" data-lang="rust" style="--tab-color: var(--rs)">
-      <div class="dot" style="background:var(--rs)"></div>Rust <span class="ext-badge">EXTERNAL</span>
-    </button>
+<!-- HEADER -->
+<div class="header">
+  <div class="header-left">
+    <div class="logo">Code<span>Lab</span> <span style="opacity:0.3">·</span> Notebook</div>
+    <div class="header-status" id="globalStatus">Initializing...</div>
   </div>
-
-  <!-- Editor Area (Python, JS, SQL) -->
-  <div id="editorSection">
-    <div class="editor-layout">
-      <!-- Code Panel -->
-      <div class="panel" id="codePanel">
-        <div class="panel-header">
-          <div class="panel-title">
-            <div class="panel-title-dot" id="editorDot"></div>
-            <span id="editorLabel">EDITOR</span>
-          </div>
-          <div style="display:flex;gap:8px;align-items:center">
-            <button class="btn-clear" onclick="clearCode()">Clear</button>
-            <button class="btn-run" id="runBtn" onclick="runCode()">
-              <span class="run-icon">▶</span> Run
-            </button>
-          </div>
-        </div>
-        <div class="editor-wrap" style="position:relative">
-          <textarea class="code-editor" id="codeEditor" spellcheck="false" placeholder="// Write your code here..."></textarea>
-        </div>
-      </div>
-
-      <!-- Output Panel -->
-      <div class="panel" id="outputPanel">
-        <div class="panel-header">
-          <div class="panel-title">
-            <div class="panel-title-dot" id="outputDot"></div>
-            OUTPUT
-          </div>
-          <button class="btn-clear" onclick="clearOutput()">Clear</button>
-        </div>
-        <div class="output-wrap" id="outputWrap">
-          <div class="output-placeholder" id="outputPlaceholder">
-            <div class="big-icon">🖥️</div>
-            <div>Output will appear here</div>
-            <div style="font-size:11px">Press Run to execute your code</div>
-          </div>
-        </div>
-        <!-- Loading overlay inside output -->
-        <div class="loading-overlay" id="loadingOverlay" style="display:none">
-          <div class="spinner"></div>
-          <div class="loading-text" id="loadingText">Loading Python...</div>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- External Panel (C#, Rust) -->
-  <div id="externalSection" style="display:none">
-    <div class="external-panel" id="externalContent"></div>
-  </div>
-
-  <!-- Bottom Bar -->
-  <div class="bottom-bar" id="bottomBar">
-    <div class="lib-badges" id="libBadges"></div>
-    <div id="execTime" style="color:var(--muted)">—</div>
+  <div class="header-actions">
+    <button class="hbtn hbtn-outline" onclick="runAll()">▶▶ Run All</button>
+    <button class="hbtn hbtn-outline" onclick="clearAllOutputs()">Clear All</button>
+    <button class="hbtn hbtn-outline" onclick="downloadNotebook()">⬇ Download</button>
+    <button class="hbtn hbtn-solid" onclick="saveNotebook()">💾 Save</button>
   </div>
 </div>
 
-<!-- Input Modal -->
-<div class="input-modal" id="inputModal" style="display:none">
+<!-- NOTEBOOK -->
+<div class="notebook">
+  <div class="notebook-title-area">
+    <div class="notebook-title" contenteditable="true" id="notebookTitle">My Notebook</div>
+    <div class="notebook-meta">
+      <span id="cellCount">0 cells</span>
+      <span id="lastSaved">Not saved yet</span>
+    </div>
+  </div>
+  <div class="cells-container" id="cellsContainer"></div>
+  <div class="add-cell-area">
+    <button class="add-cell-btn" onclick="showLangPicker()">+ Add Cell</button>
+  </div>
+</div>
+
+<!-- LANG PICKER MODAL -->
+<div class="modal-overlay" id="langPickerModal" style="display:none">
+  <div class="modal-box">
+    <div class="modal-title">Choose Language</div>
+    <div class="lang-options">
+      <div class="lang-option" style="--opt-color:var(--py)" onclick="addCell('python')">
+        <div class="opt-name">🐍 Python</div>
+        <div class="opt-desc">Pyodide · numpy, pandas...</div>
+      </div>
+      <div class="lang-option" style="--opt-color:var(--js)" onclick="addCell('javascript')">
+        <div class="opt-name">⚡ JavaScript</div>
+        <div class="opt-desc">ES2024 · native browser</div>
+      </div>
+      <div class="lang-option" style="--opt-color:var(--sql)" onclick="addCell('sql')">
+        <div class="opt-name">🗄️ SQL</div>
+        <div class="opt-desc">SQLite · sql.js</div>
+      </div>
+      <div class="lang-option ext-opt" style="--opt-color:var(--cs)" onclick="addCell('csharp')">
+        <div class="opt-name">💜 C#</div>
+        <div class="opt-desc">External platform</div>
+      </div>
+      <div class="lang-option ext-opt" style="--opt-color:var(--rs)" onclick="addCell('rust')">
+        <div class="opt-name">🦀 Rust</div>
+        <div class="opt-desc">External platform</div>
+      </div>
+    </div>
+    <button class="modal-cancel" onclick="hideLangPicker()">Cancel</button>
+  </div>
+</div>
+
+<!-- INPUT MODAL -->
+<div class="modal-overlay" id="inputModal" style="display:none">
   <div class="input-modal-box">
     <div class="input-modal-title">Input Required</div>
     <div class="input-modal-prompt" id="inputPrompt">Enter value:</div>
-    <input class="input-modal-field" id="inputField" type="text" autofocus>
-    <div class="input-modal-btns">
-      <button class="btn-ok" id="inputOkBtn">OK</button>
+    <input class="input-field" id="inputField" type="text">
+    <div class="input-btns">
+      <button class="btn-ok" onclick="submitInput()">OK</button>
     </div>
   </div>
 </div>
 
-<!-- sql.js -->
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+
 <script src="https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.10.2/sql-wasm.js"></script>
-
 <script>
-// ========== STATE ==========
-let currentLang = 'python';
-let pyodide = null;
-let pyodideReady = false;
-let sqlDB = null;
-let sqlReady = false;
-let isRunning = false;
-let startTime = null;
+// ========== CONFIG ==========
+const LANG = {
+  python:     { color: '#2563eb', label: 'Python',     icon: '🐍', external: false },
+  javascript: { color: '#d97706', label: 'JavaScript', icon: '⚡', external: false },
+  sql:        { color: '#059669', label: 'SQL',        icon: '🗄️', external: false },
+  csharp:     { color: '#7c3aed', label: 'C#',         icon: '💜', external: true  },
+  rust:       { color: '#dc2626', label: 'Rust',       icon: '🦀', external: true  },
+};
 
-// ========== LANGUAGE CONFIG ==========
-const LANG_CONFIG = {
-  python: {
-    color: '#3b82f6',
-    label: 'Python 3 · Pyodide',
-    libs: ['numpy', 'pandas', 'matplotlib', 'scipy', 'scikit-learn', 'requests (sim)', 'json', 'math', 're', 'datetime'],
-    default: `import sys
-import json
-import math
+const EXT_PLATFORMS = {
+  csharp: [
+    { name: '.NET Fiddle', url: 'https://dotnetfiddle.net/', icon: '🎻' },
+    { name: 'OneCompiler', url: 'https://onecompiler.com/csharp', icon: '🖥️' },
+    { name: 'Replit', url: 'https://replit.com/languages/csharp', icon: '♻️' },
+  ],
+  rust: [
+    { name: 'Rust Playground', url: 'https://play.rust-lang.org/', icon: '🦀' },
+    { name: 'OneCompiler', url: 'https://onecompiler.com/rust', icon: '🖥️' },
+    { name: 'Replit', url: 'https://replit.com/languages/rust', icon: '♻️' },
+  ]
+};
 
-# --- Python Playground ---
-# Numpy, pandas, matplotlib tersedia!
+const DEFAULT_CODE = {
+  python: `import math, json
 
-# Contoh: operasi dasar
-print("🐍 Hello from Python!")
+print("🐍 Hello Python!")
 print(f"π = {math.pi:.6f}")
 
-# List comprehension
-squares = [x**2 for x in range(1, 6)]
-print("Squares:", squares)
+data = [x**2 for x in range(1, 6)]
+print("Squares:", data)
+`,
+  javascript: `console.log("⚡ Hello JavaScript!");
 
-# Dictionary
-data = {"nama": "Budi", "bahasa": "Python", "level": 5}
-print(json.dumps(data, indent=2))
+const greet = name => \`Hello, \${name}!\`;
+console.log(greet("World"));
 
-# Input dari user
-# name = input("Siapa namamu? ")
-# print(f"Halo, {name}!")
-`
-  },
-  javascript: {
-    color: '#f59e0b',
-    label: 'JavaScript (ES2024)',
-    libs: ['Fetch API', 'Promise', 'async/await', 'JSON', 'Math', 'Date', 'RegExp', 'Map', 'Set'],
-    default: `// --- JavaScript Playground ---
-// ES2024 supported!
-
-console.log("⚡ Hello from JavaScript!");
-
-// Arrow functions & destructuring
-const add = (a, b) => a + b;
-console.log("3 + 4 =", add(3, 4));
-
-// Array methods
-const langs = ["Python", "JavaScript", "Rust", "Go"];
-const filtered = langs.filter(l => l.length > 4);
-console.log("Long names:", filtered);
-
-// Async/await simulation
-const fetchData = async () => {
-  const data = await Promise.resolve({ status: "ok", count: 42 });
-  console.log("Async result:", JSON.stringify(data));
-};
-fetchData();
-
-// Class
-class Calculator {
-  constructor(val) { this.val = val; }
-  add(n) { this.val += n; return this; }
-  multiply(n) { this.val *= n; return this; }
-  result() { return this.val; }
-}
-const calc = new Calculator(10).add(5).multiply(2);
-console.log("Calc result:", calc.result());
-`
-  },
-  sql: {
-    color: '#10b981',
-    label: 'SQL · SQLite (sql.js)',
-    libs: ['SELECT', 'INSERT', 'UPDATE', 'DELETE', 'JOIN', 'GROUP BY', 'ORDER BY', 'CREATE TABLE', 'INDEX', 'VIEW'],
-    default: `-- --- SQL Playground (SQLite) ---
-
--- Buat tabel
-CREATE TABLE IF NOT EXISTS karyawan (
-  id INTEGER PRIMARY KEY AUTOINCREMENT,
-  nama TEXT NOT NULL,
-  divisi TEXT,
-  gaji INTEGER,
-  tahun_masuk INTEGER
+const nums = [1,2,3,4,5].map(x => x * x);
+console.log("Squares:", nums);
+`,
+  sql: `CREATE TABLE IF NOT EXISTS users (
+  id INTEGER PRIMARY KEY,
+  name TEXT,
+  role TEXT,
+  salary INTEGER
 );
 
--- Insert data
-INSERT INTO karyawan (nama, divisi, gaji, tahun_masuk) VALUES
-  ('Budi Santoso', 'Engineering', 8500000, 2020),
-  ('Sari Dewi', 'Engineering', 9200000, 2019),
-  ('Andi Wijaya', 'Design', 7800000, 2021),
-  ('Rina Kusuma', 'Product', 10500000, 2018),
-  ('Doni Pratama', 'Engineering', 11000000, 2017);
+INSERT INTO users VALUES
+  (1, 'Budi', 'Engineer', 9000000),
+  (2, 'Sari', 'Designer', 8000000),
+  (3, 'Andi', 'Engineer', 10000000);
 
--- Query: Rata-rata gaji per divisi
-SELECT 
-  divisi,
-  COUNT(*) as jumlah_karyawan,
-  AVG(gaji) as rata_gaji,
-  MAX(gaji) as gaji_tertinggi
-FROM karyawan
-GROUP BY divisi
-ORDER BY rata_gaji DESC;
-
--- Query: Karyawan dengan gaji di atas rata-rata
-SELECT nama, gaji
-FROM karyawan
-WHERE gaji > (SELECT AVG(gaji) FROM karyawan)
-ORDER BY gaji DESC;
-`
-  }
+SELECT role, COUNT(*) as total, AVG(salary) as avg_salary
+FROM users GROUP BY role;
+`,
 };
 
-const EXTERNAL_CONFIG = {
-  csharp: {
-    icon: '💜',
-    color: '#a855f7',
-    title: 'C# Playground',
-    desc: 'C# memerlukan .NET runtime yang tidak bisa dijalankan langsung di browser. Gunakan platform berikut untuk coding C#:',
-    platforms: [
-      { name: '.NET Fiddle', url: 'https://dotnetfiddle.net/', icon: '🎻' },
-      { name: 'Replit', url: 'https://replit.com/languages/csharp', icon: '♻️' },
-      { name: 'Compiler Explorer', url: 'https://godbolt.org/', icon: '🔭' },
-      { name: 'OneCompiler', url: 'https://onecompiler.com/csharp', icon: '🖥️' },
-    ]
-  },
-  rust: {
-    icon: '🦀',
-    color: '#ef4444',
-    title: 'Rust Playground',
-    desc: 'Rust memerlukan compiler yang tidak bisa dijalankan di browser. Tapi Rust punya playground resmi yang sangat lengkap!',
-    platforms: [
-      { name: 'Rust Playground', url: 'https://play.rust-lang.org/', icon: '🦀' },
-      { name: 'Replit', url: 'https://replit.com/languages/rust', icon: '♻️' },
-      { name: 'Compiler Explorer', url: 'https://godbolt.org/', icon: '🔭' },
-      { name: 'OneCompiler', url: 'https://onecompiler.com/rust', icon: '🖥️' },
-    ]
-  }
-};
+// ========== STATE ==========
+let cells = [];
+let cellIdCounter = 0;
+let pyodide = null;
+let pyodideReady = false;
+let pyodideLoading = false;
+let sqlDB = null;
+let sqlReady = false;
+let inputResolve = null;
 
-// ========== UI HELPERS ==========
+// ========== TOAST ==========
+function toast(msg, duration = 2500) {
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  el.classList.add('show');
+  setTimeout(() => el.classList.remove('show'), duration);
+}
+
+// ========== STATUS ==========
 function setStatus(text, ready = false) {
-  document.getElementById('statusText').textContent = text;
-  document.getElementById('statusDot').className = 'status-dot' + (ready ? ' ready' : '');
+  const el = document.getElementById('globalStatus');
+  el.textContent = text;
+  el.className = 'header-status' + (ready ? ' ready' : '');
 }
 
-function setActiveLangColor(color) {
-  document.documentElement.style.setProperty('--active-lang-color', color);
-}
-
-function printOutput(text, type = '') {
-  const wrap = document.getElementById('outputWrap');
-  const ph = document.getElementById('outputPlaceholder');
-  if (ph) ph.style.display = 'none';
-  const div = document.createElement('div');
-  div.className = 'output-line' + (type ? ' ' + type : '');
-  div.textContent = text;
-  wrap.appendChild(div);
-  wrap.scrollTop = wrap.scrollHeight;
-}
-
-function clearOutput() {
-  const wrap = document.getElementById('outputWrap');
-  wrap.innerHTML = '<div class="output-placeholder" id="outputPlaceholder"><div class="big-icon">🖥️</div><div>Output will appear here</div><div style="font-size:11px">Press Run to execute your code</div></div>';
-  document.getElementById('execTime').textContent = '—';
-}
-
-function clearCode() {
-  const editor = document.getElementById('codeEditor');
-  if (editor) editor.value = '';
-}
-
-function showLoading(text) {
-  document.getElementById('loadingOverlay').style.display = 'flex';
-  document.getElementById('loadingText').textContent = text;
-}
-function hideLoading() {
-  document.getElementById('loadingOverlay').style.display = 'none';
-}
-
-function updateBottomBar(lang) {
-  const cfg = LANG_CONFIG[lang];
-  if (!cfg) return;
-  setActiveLangColor(cfg.color);
-  const badges = document.getElementById('libBadges');
-  badges.innerHTML = '<span style="color:var(--muted);margin-right:4px;font-size:10px">LIBRARIES:</span>' +
-    cfg.libs.map(l => `<span class="lib-badge active-lib">${l}</span>`).join('');
-}
-
-// ========== SWITCH LANGUAGE ==========
-document.getElementById('langTabs').addEventListener('click', e => {
-  const tab = e.target.closest('.lang-tab');
-  if (!tab) return;
-  const lang = tab.dataset.lang;
-  switchLang(lang);
-});
-
-function switchLang(lang) {
-  currentLang = lang;
-  // Update tabs
-  document.querySelectorAll('.lang-tab').forEach(t => {
-    t.classList.toggle('active', t.dataset.lang === lang);
-  });
-
-  const isExternal = lang === 'csharp' || lang === 'rust';
-
-  document.getElementById('editorSection').style.display = isExternal ? 'none' : 'block';
-  document.getElementById('externalSection').style.display = isExternal ? 'block' : 'none';
-  document.getElementById('bottomBar').style.display = isExternal ? 'none' : 'flex';
-
-  if (isExternal) {
-    renderExternalPanel(lang);
-    return;
-  }
-
-  const cfg = LANG_CONFIG[lang];
-  setActiveLangColor(cfg.color);
-
-  // Update editor dot color
-  document.getElementById('editorDot').style.background = cfg.color;
-  document.getElementById('outputDot').style.background = cfg.color;
-  document.getElementById('editorLabel').textContent = cfg.label.toUpperCase();
-
-  // Load default code if editor is empty or switching
-  const editor = document.getElementById('codeEditor');
-  editor.value = cfg.default;
-  editor.style.caretColor = cfg.color;
-
-  // Update run button
-  const runBtn = document.getElementById('runBtn');
-  runBtn.style.background = `linear-gradient(135deg, ${cfg.color}, color-mix(in srgb, ${cfg.color} 70%, white))`;
-
-  updateBottomBar(lang);
-  clearOutput();
-
-  if (lang === 'python') {
-    if (!pyodideReady) {
-      setStatus('Loading Python runtime...');
-    } else {
-      setStatus('Python ready', true);
-    }
-  } else if (lang === 'javascript') {
-    setStatus('JavaScript ready', true);
-  } else if (lang === 'sql') {
-    if (!sqlReady) {
-      setStatus('Loading SQLite...');
-    } else {
-      setStatus('SQL (SQLite) ready', true);
-    }
-  }
-}
-
-function renderExternalPanel(lang) {
-  const cfg = EXTERNAL_CONFIG[lang];
-  const el = document.getElementById('externalContent');
-  el.style.setProperty('--tab-color', cfg.color);
-  el.innerHTML = `
-    <div class="ext-icon">${cfg.icon}</div>
-    <div class="ext-title">${cfg.title}</div>
-    <div class="ext-desc">${cfg.desc}</div>
-    <div class="ext-platforms">
-      ${cfg.platforms.map(p => `
-        <a href="${p.url}" target="_blank" class="ext-link" style="--tab-color:${cfg.color}">
-          ${p.icon} ${p.name}
-        </a>
-      `).join('')}
-    </div>
-  `;
-}
+// ========== LANG PICKER ==========
+function showLangPicker() { document.getElementById('langPickerModal').style.display = 'flex'; }
+function hideLangPicker() { document.getElementById('langPickerModal').style.display = 'none'; }
 
 // ========== INPUT MODAL ==========
-let inputResolve = null;
 function askInput(prompt) {
   return new Promise(resolve => {
     inputResolve = resolve;
@@ -900,295 +647,626 @@ function submitInput() {
   document.getElementById('inputModal').style.display = 'none';
   if (inputResolve) { inputResolve(val); inputResolve = null; }
 }
-document.getElementById('inputOkBtn').addEventListener('click', submitInput);
 document.getElementById('inputField').addEventListener('keydown', e => {
   if (e.key === 'Enter') submitInput();
 });
 
-// ========== RUN CODE ==========
-async function runCode() {
-  if (isRunning) return;
-  const code = document.getElementById('codeEditor').value.trim();
-  if (!code) return;
+// ========== CELL MANAGEMENT ==========
+function addCell(lang) {
+  hideLangPicker();
+  const id = ++cellIdCounter;
+  const cfg = LANG[lang];
+  const cell = { id, lang, code: DEFAULT_CODE[lang] || '', output: null };
+  cells.push(cell);
+  renderCell(cell);
+  updateMeta();
+  autoSave();
+  // Scroll to new cell
+  setTimeout(() => {
+    const el = document.getElementById(`cell-${id}`);
+    if (el) el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  }, 100);
+}
 
-  isRunning = true;
-  document.getElementById('runBtn').disabled = true;
-  clearOutput();
-  startTime = performance.now();
+function deleteCell(id) {
+  const idx = cells.findIndex(c => c.id === id);
+  if (idx === -1) return;
+  cells.splice(idx, 1);
+  const el = document.getElementById(`cell-${id}`);
+  if (el) {
+    el.style.transition = 'opacity 0.2s, transform 0.2s';
+    el.style.opacity = '0';
+    el.style.transform = 'translateX(-10px)';
+    setTimeout(() => { el.remove(); updateCellNumbers(); updateMeta(); }, 200);
+  }
+  autoSave();
+}
 
-  try {
-    if (currentLang === 'python') await runPython(code);
-    else if (currentLang === 'javascript') await runJavaScript(code);
-    else if (currentLang === 'sql') await runSQL(code);
-  } catch(err) {
-    printOutput('Fatal: ' + err.message, 'error');
+function moveCell(id, dir) {
+  const idx = cells.findIndex(c => c.id === id);
+  const newIdx = idx + dir;
+  if (newIdx < 0 || newIdx >= cells.length) return;
+  [cells[idx], cells[newIdx]] = [cells[newIdx], cells[idx]];
+  const container = document.getElementById('cellsContainer');
+  const els = Array.from(container.children);
+  const elA = document.getElementById(`cell-${cells[idx].id}`);
+  const elB = document.getElementById(`cell-${cells[newIdx].id}`);
+  if (dir === 1) container.insertBefore(elA, elB);
+  else container.insertBefore(elB, elA);
+  updateCellNumbers();
+  autoSave();
+}
+
+function changeLang(id, lang) {
+  const cell = cells.find(c => c.id === id);
+  if (!cell) return;
+  cell.lang = lang;
+  // Re-render cell
+  const el = document.getElementById(`cell-${id}`);
+  if (!el) return;
+  const cfg = LANG[lang];
+  el.style.setProperty('--cell-color', cfg.color);
+
+  // Update lang pills active state
+  el.querySelectorAll('.lang-pill').forEach(p => {
+    p.classList.toggle('active', p.dataset.lang === lang);
+    if (p.dataset.lang === lang) p.style.setProperty('--lang-pill-color', cfg.color);
+  });
+
+  // Switch between editor and external
+  const editorArea = el.querySelector('.cell-editor-area');
+  const extArea = el.querySelector('.cell-external');
+  const runBtn = el.querySelector('.run-btn');
+
+  if (cfg.external) {
+    if (editorArea) editorArea.style.display = 'none';
+    if (extArea) {
+      extArea.style.display = 'flex';
+      extArea.innerHTML = renderExternalContent(lang);
+    }
+    if (runBtn) runBtn.style.display = 'none';
+  } else {
+    if (editorArea) editorArea.style.display = 'block';
+    if (extArea) extArea.style.display = 'none';
+    if (runBtn) {
+      runBtn.style.display = 'flex';
+      runBtn.style.background = cfg.color;
+    }
+    // Update textarea default if empty
+    const ta = el.querySelector('textarea.cell-editor');
+    if (ta && (!cell.code || cell.code === DEFAULT_CODE[cell.lang])) {
+      ta.value = DEFAULT_CODE[lang] || '';
+      cell.code = ta.value;
+    }
   }
 
-  const elapsed = ((performance.now() - startTime) / 1000).toFixed(3);
-  document.getElementById('execTime').textContent = `⏱ ${elapsed}s`;
-  document.getElementById('runBtn').disabled = false;
-  isRunning = false;
+  autoSave();
+}
+
+function renderExternalContent(lang) {
+  const platforms = EXT_PLATFORMS[lang] || [];
+  return `
+    <div class="ext-info">
+      <div class="ext-info-title">${LANG[lang].icon} ${LANG[lang].label} memerlukan compiler eksternal</div>
+      <div class="ext-info-desc">Buka salah satu platform di bawah untuk coding ${LANG[lang].label}:</div>
+    </div>
+    <div class="ext-links">
+      ${platforms.map(p => `<a href="${p.url}" target="_blank" class="ext-link">${p.icon} ${p.name}</a>`).join('')}
+    </div>
+  `;
+}
+
+function renderCell(cell) {
+  const cfg = LANG[cell.lang];
+  const container = document.getElementById('cellsContainer');
+  const idx = cells.findIndex(c => c.id === cell.id);
+
+  const div = document.createElement('div');
+  div.className = 'cell';
+  div.id = `cell-${cell.id}`;
+  div.style.setProperty('--cell-color', cfg.color);
+
+  const langPills = Object.entries(LANG).map(([k, v]) => `
+    <button class="lang-pill ${k === cell.lang ? 'active' : ''} ${v.external ? 'ext-pill' : ''}"
+      data-lang="${k}"
+      style="${k === cell.lang ? `--lang-pill-color:${v.color}` : ''}"
+      onclick="changeLang(${cell.id}, '${k}')"
+      title="${v.label}${v.external ? ' (External)' : ''}">
+      ${v.label}
+    </button>
+  `).join('');
+
+  const isExt = cfg.external;
+
+  div.innerHTML = `
+    <div class="cell-header">
+      <div class="cell-left">
+        <span class="cell-num" id="cellnum-${cell.id}">[${idx + 1}]</span>
+        <div class="lang-selector">${langPills}</div>
+      </div>
+      <div class="cell-right">
+        <button class="cell-btn" onclick="moveCell(${cell.id}, -1)" title="Move Up">↑</button>
+        <button class="cell-btn" onclick="moveCell(${cell.id}, 1)" title="Move Down">↓</button>
+        <button class="cell-btn" onclick="duplicateCell(${cell.id})" title="Duplicate">⧉</button>
+        <button class="cell-btn danger" onclick="deleteCell(${cell.id})" title="Delete">✕</button>
+        <button class="run-btn" id="runbtn-${cell.id}" onclick="runCell(${cell.id})"
+          style="display:${isExt ? 'none' : 'flex'}; background:${cfg.color}">
+          ▶ Run
+        </button>
+      </div>
+    </div>
+    <div class="cell-editor-area" style="display:${isExt ? 'none' : 'block'}">
+      <textarea class="cell-editor" id="editor-${cell.id}" spellcheck="false"
+        placeholder="Write ${cfg.label} code here..."
+        onkeydown="handleEditorKey(event, ${cell.id})"
+        oninput="onCodeInput(${cell.id})"
+      >${escapeHtml(cell.code || '')}</textarea>
+    </div>
+    <div class="cell-external" style="display:${isExt ? 'flex' : 'none'}">
+      ${isExt ? renderExternalContent(cell.lang) : ''}
+    </div>
+    <div class="cell-output" id="output-${cell.id}">
+      <div class="out-header">
+        <span class="out-label">Output</span>
+        <span class="out-time" id="outtime-${cell.id}"></span>
+      </div>
+      <div id="outlines-${cell.id}"></div>
+    </div>
+  `;
+
+  container.appendChild(div);
+
+  // Focus handling for active state
+  const ta = div.querySelector('textarea');
+  if (ta) {
+    ta.addEventListener('focus', () => div.classList.add('active'));
+    ta.addEventListener('blur', () => div.classList.remove('active'));
+  }
+}
+
+function escapeHtml(str) {
+  return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+function handleEditorKey(e, id) {
+  if (e.key === 'Tab') {
+    e.preventDefault();
+    const ta = e.target;
+    const s = ta.selectionStart, end = ta.selectionEnd;
+    ta.value = ta.value.substring(0, s) + '    ' + ta.value.substring(end);
+    ta.selectionStart = ta.selectionEnd = s + 4;
+  }
+  if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
+    e.preventDefault();
+    runCell(id);
+  }
+}
+
+function onCodeInput(id) {
+  const cell = cells.find(c => c.id === id);
+  if (cell) {
+    const ta = document.getElementById(`editor-${id}`);
+    if (ta) cell.code = ta.value;
+    autoSave();
+  }
+}
+
+function updateCellNumbers() {
+  cells.forEach((cell, i) => {
+    const el = document.getElementById(`cellnum-${cell.id}`);
+    if (el) el.textContent = `[${i + 1}]`;
+  });
+}
+
+function updateMeta() {
+  document.getElementById('cellCount').textContent = `${cells.length} cell${cells.length !== 1 ? 's' : ''}`;
+  updateCellNumbers();
+}
+
+function duplicateCell(id) {
+  const cell = cells.find(c => c.id === id);
+  if (!cell) return;
+  const newId = ++cellIdCounter;
+  const newCell = { id: newId, lang: cell.lang, code: cell.code, output: null };
+  const idx = cells.findIndex(c => c.id === id);
+  cells.splice(idx + 1, 0, newCell);
+
+  // Insert after current cell in DOM
+  renderCellAfter(newCell, id);
+  updateCellNumbers();
+  updateMeta();
+  autoSave();
+}
+
+function renderCellAfter(cell, afterId) {
+  const afterEl = document.getElementById(`cell-${afterId}`);
+  const tempDiv = document.createElement('div');
+  const container = document.getElementById('cellsContainer');
+
+  // Temporarily append to get the element, then insert
+  const cfg = LANG[cell.lang];
+  const div = document.createElement('div');
+  div.className = 'cell';
+  div.id = `cell-${cell.id}`;
+  div.style.setProperty('--cell-color', cfg.color);
+  div.style.opacity = '0';
+  div.style.transform = 'translateY(-8px)';
+  div.style.transition = 'opacity 0.2s, transform 0.2s';
+
+  const langPills = Object.entries(LANG).map(([k, v]) => `
+    <button class="lang-pill ${k === cell.lang ? 'active' : ''} ${v.external ? 'ext-pill' : ''}"
+      data-lang="${k}"
+      style="${k === cell.lang ? `--lang-pill-color:${v.color}` : ''}"
+      onclick="changeLang(${cell.id}, '${k}')">${v.label}</button>
+  `).join('');
+
+  const isExt = cfg.external;
+  div.innerHTML = `
+    <div class="cell-header">
+      <div class="cell-left">
+        <span class="cell-num" id="cellnum-${cell.id}">[?]</span>
+        <div class="lang-selector">${langPills}</div>
+      </div>
+      <div class="cell-right">
+        <button class="cell-btn" onclick="moveCell(${cell.id}, -1)">↑</button>
+        <button class="cell-btn" onclick="moveCell(${cell.id}, 1)">↓</button>
+        <button class="cell-btn" onclick="duplicateCell(${cell.id})">⧉</button>
+        <button class="cell-btn danger" onclick="deleteCell(${cell.id})">✕</button>
+        <button class="run-btn" id="runbtn-${cell.id}" onclick="runCell(${cell.id})"
+          style="display:${isExt ? 'none' : 'flex'}; background:${cfg.color}">▶ Run</button>
+      </div>
+    </div>
+    <div class="cell-editor-area" style="display:${isExt ? 'none' : 'block'}">
+      <textarea class="cell-editor" id="editor-${cell.id}" spellcheck="false"
+        onkeydown="handleEditorKey(event, ${cell.id})"
+        oninput="onCodeInput(${cell.id})"
+      >${escapeHtml(cell.code || '')}</textarea>
+    </div>
+    <div class="cell-external" style="display:${isExt ? 'flex' : 'none'}">
+      ${isExt ? renderExternalContent(cell.lang) : ''}
+    </div>
+    <div class="cell-output" id="output-${cell.id}">
+      <div class="out-header">
+        <span class="out-label">Output</span>
+        <span class="out-time" id="outtime-${cell.id}"></span>
+      </div>
+      <div id="outlines-${cell.id}"></div>
+    </div>
+  `;
+
+  if (afterEl && afterEl.nextSibling) {
+    container.insertBefore(div, afterEl.nextSibling);
+  } else {
+    container.appendChild(div);
+  }
+
+  const ta = div.querySelector('textarea');
+  if (ta) {
+    ta.addEventListener('focus', () => div.classList.add('active'));
+    ta.addEventListener('blur', () => div.classList.remove('active'));
+  }
+
+  requestAnimationFrame(() => {
+    div.style.opacity = '1';
+    div.style.transform = 'translateY(0)';
+  });
+}
+
+// ========== OUTPUT ==========
+function printLine(cellId, text, type = '') {
+  const outEl = document.getElementById(`output-${cellId}`);
+  const linesEl = document.getElementById(`outlines-${cellId}`);
+  if (!outEl || !linesEl) return;
+  outEl.classList.add('visible');
+  const div = document.createElement('div');
+  div.className = 'out-line' + (type ? ' ' + type : '');
+  div.textContent = text;
+  linesEl.appendChild(div);
+  outEl.scrollTop = outEl.scrollHeight;
+}
+
+function clearCellOutput(cellId) {
+  const outEl = document.getElementById(`output-${cellId}`);
+  const linesEl = document.getElementById(`outlines-${cellId}`);
+  if (outEl) outEl.classList.remove('visible');
+  if (linesEl) linesEl.innerHTML = '';
+  const timeEl = document.getElementById(`outtime-${cellId}`);
+  if (timeEl) timeEl.textContent = '';
+}
+
+// ========== RUN ==========
+async function runCell(id) {
+  const cell = cells.find(c => c.id === id);
+  if (!cell) return;
+  const ta = document.getElementById(`editor-${id}`);
+  const code = ta ? ta.value.trim() : cell.code.trim();
+  if (!code) return;
+
+  const btn = document.getElementById(`runbtn-${id}`);
+  if (btn) { btn.disabled = true; btn.innerHTML = '<span class="spin"></span> Running'; }
+
+  clearCellOutput(id);
+  const t0 = performance.now();
+
+  try {
+    if (cell.lang === 'python') await runPython(id, code);
+    else if (cell.lang === 'javascript') await runJS(id, code);
+    else if (cell.lang === 'sql') await runSQL(id, code);
+  } catch(e) {
+    printLine(id, '❌ ' + e.message, 'err');
+  }
+
+  const elapsed = ((performance.now() - t0) / 1000).toFixed(3);
+  const timeEl = document.getElementById(`outtime-${id}`);
+  if (timeEl) timeEl.textContent = `⏱ ${elapsed}s`;
+
+  if (btn) {
+    const cfg = LANG[cell.lang];
+    btn.disabled = false;
+    btn.innerHTML = '▶ Run';
+    btn.style.background = cfg.color;
+  }
+}
+
+async function runAll() {
+  for (const cell of cells) {
+    if (!LANG[cell.lang].external) await runCell(cell.id);
+  }
+  toast('✅ All cells executed!');
+}
+
+function clearAllOutputs() {
+  cells.forEach(c => clearCellOutput(c.id));
+  toast('🧹 Outputs cleared');
 }
 
 // ========== PYTHON ==========
-async function loadPyodide() {
+async function ensurePyodide(cellId) {
+  if (pyodideReady) return true;
+  if (pyodideLoading) {
+    // Wait
+    printLine(cellId, '⏳ Waiting for Python runtime...', 'info');
+    await new Promise(r => { const iv = setInterval(() => { if (pyodideReady || !pyodideLoading) { clearInterval(iv); r(); } }, 300); });
+    return pyodideReady;
+  }
+  pyodideLoading = true;
+  setStatus('Loading Python...');
+  printLine(cellId, '⏳ Loading Python (Pyodide)... This may take 10–30 seconds.', 'info');
+
   try {
-    showLoading('Loading Python (Pyodide)...');
-    setStatus('Loading Python...');
-    pyodide = await loadPyodideFromCDN();
+    await new Promise((res, rej) => {
+      const s = document.createElement('script');
+      s.src = 'https://cdn.jsdelivr.net/pyodide/v0.26.2/full/pyodide.js';
+      s.onload = res; s.onerror = () => rej(new Error('Failed to load Pyodide'));
+      document.head.appendChild(s);
+    });
+    pyodide = await window.loadPyodide({ indexURL: 'https://cdn.jsdelivr.net/pyodide/v0.26.2/full/' });
     pyodideReady = true;
-    hideLoading();
-    setStatus('Python ready', true);
-    printOutput('✅ Python (Pyodide) loaded successfully!', 'success');
-    printOutput('📦 Available: numpy, pandas, matplotlib, scipy, json, math, re, datetime...', 'info');
+    pyodideLoading = false;
+    setStatus('Ready', true);
+    printLine(cellId, '✅ Python ready! numpy, pandas, scipy, scikit-learn available.', 'ok');
+    return true;
   } catch(e) {
-    hideLoading();
-    setStatus('Python load failed');
-    printOutput('❌ Failed to load Pyodide: ' + e.message, 'error');
+    pyodideLoading = false;
+    setStatus('Python failed');
+    printLine(cellId, '❌ Failed to load Python: ' + e.message, 'err');
+    return false;
   }
 }
 
-async function loadPyodideFromCDN() {
-  return new Promise((resolve, reject) => {
-    const script = document.createElement('script');
-    script.src = 'https://cdn.jsdelivr.net/pyodide/v0.26.2/full/pyodide.js';
-    script.onload = async () => {
-      try {
-        const py = await window.loadPyodide({
-          indexURL: 'https://cdn.jsdelivr.net/pyodide/v0.26.2/full/'
-        });
-        resolve(py);
-      } catch(e) { reject(e); }
-    };
-    script.onerror = () => reject(new Error('Failed to load Pyodide script'));
-    document.head.appendChild(script);
-  });
-}
-
-async function runPython(code) {
-  if (!pyodideReady) {
-    await loadPyodide();
-    if (!pyodideReady) return;
-  }
-
-  const outputs = [];
-  const inputQueue = [];
-
-  // Redirect stdout
-  pyodide.runPython(`
-import sys
-import io
-class CustomStdout(io.StringIO):
-    pass
-sys.stdout = CustomStdout()
-sys.stderr = CustomStdout()
-  `);
-
-  // Override input
-  pyodide.globals.set('__input_func__', async (prompt) => {
-    const val = await askInput(prompt || 'Enter value:');
-    return val;
-  });
+async function runPython(cellId, code) {
+  const ok = await ensurePyodide(cellId);
+  if (!ok) return;
 
   try {
-    // Replace input() with our async version (wrap in async context)
-    const wrappedCode = `
-import sys, io, builtins
-
-_captured = io.StringIO()
-sys.stdout = _captured
-sys.stderr = _captured
-
-${code}
-
-_out = _captured.getvalue()
-_captured.close()
-_out
-`;
-
-    let result = await pyodide.runPythonAsync(wrappedCode);
-    // Get captured output
-    const output = pyodide.runPython(`
-import sys, io
-_captured.getvalue() if not _captured.closed else ""
-`);
-
-    if (typeof result === 'string' && result) {
-      result.split('\n').forEach(line => {
-        if (line !== '') printOutput(line);
-      });
-    }
-
-  } catch(err) {
-    // Fallback: simpler run
-    try {
-      pyodide.runPython(`
+    pyodide.runPython(`
 import sys, io
 _buf = io.StringIO()
 sys.stdout = _buf
 sys.stderr = _buf
 `);
-      await pyodide.runPythonAsync(code);
-      const out = pyodide.runPython(`
+    await pyodide.runPythonAsync(code);
+    const out = pyodide.runPython(`
 _v = _buf.getvalue()
 sys.stdout = sys.__stdout__
+sys.stderr = sys.__stderr__
 _v
 `);
-      if (out) {
-        out.split('\n').forEach(line => {
-          if (line !== '') printOutput(line);
-        });
-      }
-    } catch(err2) {
-      const msg = err2.message || String(err2);
-      // Clean up traceback for display
-      const lines = msg.split('\n');
-      lines.forEach(l => printOutput(l, 'error'));
-    }
+    if (out) out.split('\n').forEach(l => { if (l !== '') printLine(cellId, l); });
+    else printLine(cellId, '(no output)', 'info');
+  } catch(e) {
+    e.message.split('\n').forEach(l => printLine(cellId, l, 'err'));
   }
 }
 
 // ========== JAVASCRIPT ==========
-async function runJavaScript(code) {
-  const logs = [];
-  const origLog = console.log;
-  const origError = console.error;
-  const origWarn = console.warn;
-  const origInfo = console.info;
+async function runJS(cellId, code) {
+  const origLog = console.log, origErr = console.error, origWarn = console.warn;
 
-  const capture = (type) => (...args) => {
-    const text = args.map(a => {
-      if (typeof a === 'object') {
-        try { return JSON.stringify(a, null, 2); }
-        catch { return String(a); }
-      }
-      return String(a);
-    }).join(' ');
-    printOutput(text, type === 'error' ? 'error' : type === 'warn' ? 'warn' : '');
+  const cap = (type) => (...args) => {
+    const text = args.map(a => typeof a === 'object' ? JSON.stringify(a, null, 2) : String(a)).join(' ');
+    printLine(cellId, text, type === 'error' ? 'err' : type === 'warn' ? 'warn' : '');
   };
-
-  console.log = capture('log');
-  console.error = capture('error');
-  console.warn = capture('warn');
-  console.info = capture('info');
+  console.log = cap('log'); console.error = cap('error'); console.warn = cap('warn');
 
   try {
-    const asyncCode = `(async () => { ${code} })()`;
-    await eval(asyncCode);
-  } catch(err) {
-    printOutput('❌ ' + err.name + ': ' + err.message, 'error');
-    if (err.stack) {
-      const stackLines = err.stack.split('\n').slice(1, 4);
-      stackLines.forEach(l => printOutput('  ' + l.trim(), 'error'));
-    }
+    await eval(`(async () => { ${code} })()`);
+  } catch(e) {
+    printLine(cellId, '❌ ' + e.name + ': ' + e.message, 'err');
   } finally {
-    console.log = origLog;
-    console.error = origError;
-    console.warn = origWarn;
-    console.info = origInfo;
+    console.log = origLog; console.error = origErr; console.warn = origWarn;
   }
 }
 
 // ========== SQL ==========
-async function loadSQL() {
-  if (sqlReady) return;
-  showLoading('Loading SQLite (sql.js)...');
-  setStatus('Loading SQLite...');
+async function ensureSQL(cellId) {
+  if (sqlReady) return true;
+  printLine(cellId, '⏳ Loading SQLite...', 'info');
   try {
-    const SQL = await initSqlJs({
-      locateFile: f => `https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.10.2/${f}`
-    });
+    const SQL = await initSqlJs({ locateFile: f => `https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.10.2/${f}` });
     sqlDB = new SQL.Database();
     sqlReady = true;
-    hideLoading();
-    setStatus('SQL (SQLite) ready', true);
-    printOutput('✅ SQLite ready!', 'success');
-    printOutput('💡 Run CREATE TABLE, INSERT, SELECT, UPDATE, DELETE...', 'info');
+    printLine(cellId, '✅ SQLite ready!', 'ok');
+    return true;
   } catch(e) {
-    hideLoading();
-    setStatus('SQLite failed');
-    printOutput('❌ Failed to load sql.js: ' + e.message, 'error');
+    printLine(cellId, '❌ SQLite failed: ' + e.message, 'err');
+    return false;
   }
 }
 
-async function runSQL(code) {
-  if (!sqlReady) {
-    await loadSQL();
-    if (!sqlReady) return;
-  }
+async function runSQL(cellId, code) {
+  const ok = await ensureSQL(cellId);
+  if (!ok) return;
 
-  // Split multiple statements
-  const statements = code.split(';').map(s => s.trim()).filter(s => s.length > 0);
-
-  for (const stmt of statements) {
+  const stmts = code.split(';').map(s => s.trim()).filter(s => s);
+  for (const stmt of stmts) {
     try {
       const results = sqlDB.exec(stmt + ';');
       if (results.length > 0) {
         results.forEach(res => {
-          // Print column headers
-          const header = '┌ ' + res.columns.join(' │ ') + ' ┐';
-          printOutput(header, 'success');
-          printOutput('├' + '─'.repeat(header.length - 2) + '┤', 'success');
-          // Print rows
+          // Header
+          const colWidths = res.columns.map((c, i) => Math.max(c.length, ...res.values.map(r => String(r[i] ?? '').length)));
+          const sep = '+' + colWidths.map(w => '-'.repeat(w + 2)).join('+') + '+';
+          const headerRow = '| ' + res.columns.map((c, i) => c.padEnd(colWidths[i])).join(' | ') + ' |';
+          printLine(cellId, sep, 'ok');
+          printLine(cellId, headerRow, 'ok');
+          printLine(cellId, sep, 'ok');
           res.values.forEach(row => {
-            printOutput('│ ' + row.join(' │ ') + ' │');
+            const rowStr = '| ' + row.map((v, i) => String(v ?? '').padEnd(colWidths[i])).join(' | ') + ' |';
+            printLine(cellId, rowStr);
           });
-          printOutput('└' + '─'.repeat(header.length - 2) + '┘', 'success');
-          printOutput(`  ${res.values.length} row(s) returned`, 'info');
+          printLine(cellId, sep, 'ok');
+          printLine(cellId, `  ${res.values.length} row(s)`, 'info');
         });
       } else {
-        // DDL / DML
-        const lower = stmt.toLowerCase().trim();
-        if (lower.startsWith('create')) printOutput('✅ Table created', 'success');
-        else if (lower.startsWith('insert')) printOutput('✅ Row(s) inserted', 'success');
-        else if (lower.startsWith('update')) printOutput('✅ Row(s) updated', 'success');
-        else if (lower.startsWith('delete')) printOutput('✅ Row(s) deleted', 'success');
-        else if (lower.startsWith('drop')) printOutput('✅ Dropped', 'success');
-        else printOutput('✅ OK', 'success');
+        const lo = stmt.toLowerCase().trim();
+        const msg = lo.startsWith('create') ? '✅ Table created' :
+                    lo.startsWith('insert') ? '✅ Inserted' :
+                    lo.startsWith('update') ? '✅ Updated' :
+                    lo.startsWith('delete') ? '✅ Deleted' :
+                    lo.startsWith('drop')   ? '✅ Dropped' : '✅ OK';
+        printLine(cellId, msg, 'ok');
       }
-    } catch(err) {
-      printOutput('❌ SQL Error: ' + err.message, 'error');
-      printOutput('   Statement: ' + stmt.substring(0, 60) + (stmt.length > 60 ? '...' : ''), 'error');
+    } catch(e) {
+      printLine(cellId, '❌ ' + e.message, 'err');
     }
   }
 }
 
-// ========== KEYBOARD SHORTCUT ==========
-document.addEventListener('keydown', e => {
-  if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
-    e.preventDefault();
-    runCode();
-  }
-});
+// ========== SAVE / LOAD ==========
+function getNotebookData() {
+  // Sync code from textareas
+  cells.forEach(cell => {
+    const ta = document.getElementById(`editor-${cell.id}`);
+    if (ta) cell.code = ta.value;
+  });
+  return {
+    title: document.getElementById('notebookTitle').textContent,
+    cells: cells.map(c => ({ lang: c.lang, code: c.code })),
+    savedAt: new Date().toISOString()
+  };
+}
 
-// Indent with Tab
-document.getElementById('codeEditor').addEventListener('keydown', e => {
-  if (e.key === 'Tab') {
-    e.preventDefault();
-    const ta = e.target;
-    const start = ta.selectionStart;
-    const end = ta.selectionEnd;
-    ta.value = ta.value.substring(0, start) + '    ' + ta.value.substring(end);
-    ta.selectionStart = ta.selectionEnd = start + 4;
+function saveNotebook() {
+  try {
+    const data = getNotebookData();
+    localStorage.setItem('codelab_notebook', JSON.stringify(data));
+    const timeStr = new Date().toLocaleTimeString();
+    document.getElementById('lastSaved').textContent = `Saved at ${timeStr}`;
+    toast('💾 Saved to browser!');
+  } catch(e) {
+    toast('❌ Save failed: ' + e.message);
   }
-});
+}
+
+function autoSave() {
+  try {
+    const data = getNotebookData();
+    localStorage.setItem('codelab_notebook_auto', JSON.stringify(data));
+  } catch(e) {}
+}
+
+function downloadNotebook() {
+  const data = getNotebookData();
+  const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = (data.title || 'notebook').replace(/\s+/g, '_') + '.codelab.json';
+  a.click();
+  URL.revokeObjectURL(url);
+  toast('⬇ Downloaded!');
+}
+
+function loadNotebook(data) {
+  if (!data) return;
+  try {
+    document.getElementById('notebookTitle').textContent = data.title || 'My Notebook';
+    cells = [];
+    cellIdCounter = 0;
+    document.getElementById('cellsContainer').innerHTML = '';
+
+    (data.cells || []).forEach(c => {
+      const id = ++cellIdCounter;
+      const cell = { id, lang: c.lang || 'python', code: c.code || '', output: null };
+      cells.push(cell);
+      renderCell(cell);
+      // Set actual code in textarea
+      setTimeout(() => {
+        const ta = document.getElementById(`editor-${id}`);
+        if (ta) ta.value = cell.code;
+      }, 0);
+    });
+
+    updateMeta();
+    if (data.savedAt) {
+      document.getElementById('lastSaved').textContent = 'Loaded from ' + new Date(data.savedAt).toLocaleString();
+    }
+  } catch(e) {
+    console.error('Load error:', e);
+  }
+}
 
 // ========== INIT ==========
-async function init() {
-  switchLang('python');
-  updateBottomBar('python');
-  setStatus('Loading Python runtime...');
+function init() {
+  setStatus('Initializing...');
 
-  // Load Python in background
-  loadPyodide();
+  // Try load from localStorage
+  let loaded = false;
+  try {
+    const saved = localStorage.getItem('codelab_notebook') || localStorage.getItem('codelab_notebook_auto');
+    if (saved) {
+      const data = JSON.parse(saved);
+      if (data.cells && data.cells.length > 0) {
+        loadNotebook(data);
+        loaded = true;
+        toast('📂 Notebook restored!');
+      }
+    }
+  } catch(e) {}
 
-  // Load SQL in background
-  initSqlJs({
-    locateFile: f => `https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.10.2/${f}`
-  }).then(SQL => {
-    sqlDB = new SQL.Database();
-    sqlReady = true;
-  }).catch(() => {});
+  if (!loaded) {
+    // Default: add one Python cell
+    addCell('python');
+  }
+
+  setStatus('Ready', true);
+
+  // Preload SQL in background
+  initSqlJs({ locateFile: f => `https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.10.2/${f}` })
+    .then(SQL => { sqlDB = new SQL.Database(); sqlReady = true; })
+    .catch(() => {});
+
+  // Auto-save every 30s
+  setInterval(autoSave, 30000);
+
+  // Ctrl+S to save
+  document.addEventListener('keydown', e => {
+    if ((e.ctrlKey || e.metaKey) && e.key === 's') {
+      e.preventDefault();
+      saveNotebook();
+    }
+  });
 }
 
 init();
